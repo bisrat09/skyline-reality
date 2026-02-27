@@ -87,3 +87,104 @@ Highlight Seattle-specific features: mountain views, water views, walkability sc
 - Build reusable components that can be reskinned for different agencies
 - Document API integrations so setup for new clients takes hours, not days
 - Prioritize mobile experience — most leads come from phones
+
+---
+
+## Tech Stack (Finalized)
+
+- **Framework:** Next.js 14 (App Router)
+- **Styling:** Tailwind CSS 3 with custom navy/gold theme
+- **AI/Chatbot:** Claude API via `@anthropic-ai/sdk`
+- **Database:** Firestore (Firebase client + admin SDKs)
+- **Calendar:** Cal.com (`@calcom/embed-react`)
+- **Testing:** Jest + React Testing Library (unit/integration), Playwright (E2E)
+- **Utilities:** clsx + tailwind-merge for class merging
+- **Deployment:** Vercel (target)
+
+## Phase 1 Progress
+
+### Completed (Steps 1-5 of 10)
+
+#### Step 1: Project Scaffolding
+- Next.js 14 with App Router, TypeScript, Tailwind CSS
+- Jest + RTL + Playwright configs
+- Mock files for `@anthropic-ai/sdk`, `firebase`, `firebase-admin`, `@calcom/embed-react`
+- `.env.example`, `.gitignore`, `tsconfig.json`, `tailwind.config.ts`
+
+#### Step 2: Types + Utilities
+- **Types:** `src/types/` — `listing.ts`, `lead.ts`, `chat.ts`, `api.ts`
+- **Utilities:** `src/lib/utils/` — `cn.ts` (class merge), `formatCurrency.ts`, `formatDate.ts`, `validators.ts`
+- **Tests:** 29 tests passing
+
+#### Step 3: UI Component Library
+- **Components:** `src/components/ui/` — Button, Badge, Card, Input, Logo, Container, SectionHeading, Spinner
+- All support variants, sizes, and custom className merging
+- **Tests:** 47 tests passing
+
+#### Step 4: Firebase + Data Layer
+- **Firebase:** `src/lib/firebase/client.ts` (client SDK), `src/lib/firebase/admin.ts` (admin SDK)
+- **Anthropic:** `src/lib/anthropic.ts` (Claude API client)
+- **Firestore CRUD:** `src/lib/firestore/listings.ts`, `src/lib/firestore/leads.ts`
+- **Seed Data:** `src/data/seedListings.ts` — 15 Seattle properties across 12 neighborhoods
+- **Seed Script:** `src/scripts/seed.ts` — run via `npm run seed`
+- **Tests:** 30 tests passing
+
+#### Step 5: API Routes (partially complete)
+- `GET /api/listings` — filtered queries with caching headers
+- `POST /api/leads` — lead creation/upsert with urgency calculation (hot/warm/cold)
+- `POST /api/chat` — Claude streaming via SSE with system prompt + listings context
+- **System Prompt:** `src/prompts/systemPrompt.ts` — includes listings context, lead capture instructions, property suggestion markers
+- **Tests:** 27 integration tests passing
+
+### Remaining (Steps 6-10)
+
+#### Step 6: Landing Page Sections
+- Layout: Navbar (sticky, scroll-aware), Footer, MobileMenu
+- Sections: Hero, FeaturedListings, Services, Stats, Testimonials, CTA
+- Listing components: PropertyCard, PropertyGrid, PropertyBadge
+
+#### Step 7: Chat System
+- `useChat` hook with SSE streaming
+- Chat UI: ChatWidget, ChatPanel, ChatMessage, ChatInput, ChatHeader, ChatTypingIndicator
+- Response parsing for `[SUGGEST_PROPERTY:id]` and `[BOOK_SHOWING:id]` markers
+
+#### Step 8: Lead Capture System
+- `useLeadCapture` hook with regex extraction
+- Field accumulation across messages, threshold detection, API submission
+
+#### Step 9: Cal.com Integration
+- CalEmbed wrapper, BookingPrompt in chat, standalone `/booking` page
+
+#### Step 10: Polish + E2E Tests
+- Mobile optimization, image lazy loading, SEO metadata
+- Playwright E2E tests
+
+### Test Summary (current)
+- **133 tests passing** across 20 test files
+- Unit: utils (29), UI components (47), lib/firebase/firestore (30)
+- Integration: API routes (27)
+
+## Key Architecture Decisions
+
+1. **Custom `useChat` hook** — not Vercel AI SDK, for full control over SSE parsing and custom markers
+2. **SSE streaming** — token-by-token response for conversational feel
+3. **Dual lead extraction** — server-side in `/api/chat` + client-side `useLeadCapture` hook
+4. **`forwardRef` on ChatWidget** — Hero/CTA sections can open chat externally
+5. **Client-side Firestore reads** for public listings, admin SDK writes for leads
+
+## Firestore Schema
+
+**`listings`** — PropertyListing: id, address, neighborhood, price, bedrooms, bathrooms, sqft, propertyType, status, yearBuilt, description, features[], neighborhoodHighlights[], imageUrl, isFeatured, timestamps
+
+**`leads`** — LeadData: id, name, email, phone, budgetMin/Max, timeline, preferredNeighborhoods[], propertyTypePreference, bedroomsMin, status, urgency (hot/warm/cold), conversationTranscript[], source, sessionId, timestamps
+
+## Commands
+
+```bash
+npm run dev          # Start dev server
+npm run build        # Production build
+npm test             # Run all unit + integration tests
+npm run test:coverage # Tests with coverage report
+npm run test:e2e     # Playwright E2E tests
+npm run seed         # Seed Firestore with sample listings
+```
