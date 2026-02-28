@@ -197,3 +197,52 @@ npm run test:coverage # Tests with coverage report
 npm run test:e2e     # Playwright E2E tests
 npm run seed         # Seed Firestore with sample listings
 ```
+
+## Setup Checklist (to get the demo fully working)
+
+### Step 1: Create `.env.local`
+```bash
+cp .env.example .env.local
+```
+Fill in these values:
+```
+ANTHROPIC_API_KEY=sk-ant-...        # From console.anthropic.com
+FIREBASE_PROJECT_ID=your-project
+FIREBASE_CLIENT_EMAIL=...
+FIREBASE_PRIVATE_KEY=...
+NEXT_PUBLIC_FIREBASE_API_KEY=...
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=...
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=...
+```
+
+### Step 2: Set up Firebase
+1. Create a project at [console.firebase.google.com](https://console.firebase.google.com)
+2. Enable Firestore Database
+3. Generate a service account key (Settings > Service accounts > Generate new private key)
+4. Copy the values into `.env.local`
+
+### Step 3: Seed the database
+```bash
+npm run seed
+```
+
+### Step 4: Set up Cal.com
+1. Create free account at [cal.com](https://cal.com)
+2. Create an event type (e.g., "Property Showing", 30 min)
+3. Copy your link (e.g., `your-username/property-showing`)
+4. Update the default in `src/components/booking/CalEmbed.tsx`:
+```tsx
+const DEFAULT_CAL_LINK = 'your-username/property-showing';
+```
+
+### Step 5: Run it
+```bash
+npm run dev
+```
+
+That's it — the chat responds via Claude, leads get saved to Firestore, and bookings go through Cal.com.
+
+## Next Steps
+- **Phase 2:** Automated Lead Follow-Up (SMS/email within 60s, follow-up sequences)
+- **Phase 3:** Lead Dashboard (admin page with analytics)
+- **Phase 4:** Voice AI Agent (after-hours phone answering)
