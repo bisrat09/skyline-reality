@@ -103,7 +103,7 @@ Highlight Seattle-specific features: mountain views, water views, walkability sc
 
 ## Phase 1 Progress
 
-### Completed (Steps 1-5 of 10)
+### Completed (Steps 1-10 of 10) — PHASE 1 COMPLETE
 
 #### Step 1: Project Scaffolding
 - Next.js 14 with App Router, TypeScript, Tailwind CSS
@@ -136,33 +136,42 @@ Highlight Seattle-specific features: mountain views, water views, walkability sc
 - **System Prompt:** `src/prompts/systemPrompt.ts` — includes listings context, lead capture instructions, property suggestion markers
 - **Tests:** 27 integration tests passing
 
-### Remaining (Steps 6-10)
-
 #### Step 6: Landing Page Sections
-- Layout: Navbar (sticky, scroll-aware), Footer, MobileMenu
-- Sections: Hero, FeaturedListings, Services, Stats, Testimonials, CTA
-- Listing components: PropertyCard, PropertyGrid, PropertyBadge
+- **Layout:** `src/components/layout/` — Navbar (sticky, scroll-aware), Footer, MobileMenu
+- **Sections:** `src/components/sections/` — Hero, FeaturedListings, Services, Stats, Testimonials, CTA
+- **Listings:** `src/components/listings/` — PropertyCard, PropertyGrid, PropertyBadge
+- **Page:** `src/app/page.tsx` — wired up with all sections + ChatWidget
+- **Tests:** 69 new tests (202 total)
 
 #### Step 7: Chat System
-- `useChat` hook with SSE streaming
-- Chat UI: ChatWidget, ChatPanel, ChatMessage, ChatInput, ChatHeader, ChatTypingIndicator
-- Response parsing for `[SUGGEST_PROPERTY:id]` and `[BOOK_SHOWING:id]` markers
+- **Hook:** `src/hooks/useChat.ts` — SSE streaming, marker extraction (`extractMarkers`, `stripMarkers`)
+- **Chat UI:** `src/components/chat/` — ChatWidget (forwardRef), ChatPanel, ChatMessage, ChatInput, ChatHeader, ChatTypingIndicator
+- **Markers:** `[SUGGEST_PROPERTY:id]` renders inline PropertyCard, `[BOOK_SHOWING:id]` renders BookingPrompt
+- **Tests:** 39 new tests (241 total)
 
 #### Step 8: Lead Capture System
-- `useLeadCapture` hook with regex extraction
-- Field accumulation across messages, threshold detection, API submission
+- **Hook:** `src/hooks/useLeadCapture.ts` — regex extraction for email, phone, budget, bedrooms, neighborhoods, name, timeline, property type
+- **Functions:** `extractLeadFields`, `mergeFields`, `hasReachedThreshold` (pure, exported)
+- **Integration:** ChatPanel auto-submits to `/api/leads` when threshold met (contact info + 1 more field)
+- **Tests:** 38 new tests (279 total)
 
 #### Step 9: Cal.com Integration
-- CalEmbed wrapper, BookingPrompt in chat, standalone `/booking` page
+- **Components:** `src/components/booking/` — CalEmbed (wrapper), BookingPrompt (expandable card)
+- **Page:** `src/app/booking/page.tsx` — standalone booking page
+- **Integration:** ChatMessage renders BookingPrompt for `[BOOK_SHOWING:id]` markers
+- **Tests:** 13 new tests (292 total)
 
 #### Step 10: Polish + E2E Tests
-- Mobile optimization, image lazy loading, SEO metadata
-- Playwright E2E tests
+- **SEO:** Enhanced metadata (keywords, Twitter card, OpenGraph, robots)
+- **Mobile:** Responsive chat panel, mobile menu, stacking property grid
+- **E2E:** 4 Playwright test files — landing-page, chat-widget, booking-page, mobile
+- **Tests:** 292 unit/integration tests passing across 42 files
 
-### Test Summary (current)
-- **133 tests passing** across 20 test files
-- Unit: utils (29), UI components (47), lib/firebase/firestore (30)
+### Test Summary (final)
+- **292 tests passing** across 42 test files
+- Unit: utils (29), UI components (47), lib/firebase/firestore (30), listings (25), sections (28), layout (16), chat (33), booking (13), hooks (48)
 - Integration: API routes (27)
+- E2E: 4 Playwright spec files (landing-page, chat-widget, booking-page, mobile)
 
 ## Key Architecture Decisions
 

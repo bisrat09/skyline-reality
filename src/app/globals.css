@@ -17,3 +17,11 @@ body {
     text-wrap: balance;
   }
 }
+
+/* Mobile chat widget responsive */
+@media (max-width: 440px) {
+  .chat-panel-mobile {
+    width: calc(100vw - 2rem);
+    height: calc(100vh - 8rem);
+  }
+}
