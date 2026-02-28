@@ -14,7 +14,11 @@ const navLinks = [
   { label: 'Contact', href: '#contact' },
 ];
 
-export function Navbar() {
+interface NavbarProps {
+  onOpenChat?: () => void;
+}
+
+export function Navbar({ onOpenChat }: NavbarProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -57,7 +61,7 @@ export function Navbar() {
                 {link.label}
               </a>
             ))}
-            <Button variant="gold" size="sm">
+            <Button variant="gold" size="sm" onClick={onOpenChat}>
               Get Started
             </Button>
           </div>
@@ -83,6 +87,7 @@ export function Navbar() {
       <MobileMenu
         isOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}
+        onOpenChat={onOpenChat}
         links={navLinks}
       />
     </header>

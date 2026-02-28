@@ -1,7 +1,11 @@
 import { Button } from '@/components/ui/Button';
 import { Container } from '@/components/ui/Container';
 
-export function Hero() {
+interface HeroProps {
+  onOpenChat?: () => void;
+}
+
+export function Hero({ onOpenChat }: HeroProps) {
   return (
     <section className="relative min-h-[90vh] flex items-center bg-navy-900">
       {/* Background gradient overlay */}
@@ -21,13 +25,16 @@ export function Hero() {
             Our AI assistant helps you discover properties, schedule showings, and get answers to your questions — 24/7, with responses in under 60 seconds.
           </p>
           <div className="mt-8 flex flex-col sm:flex-row gap-4">
-            <Button variant="gold" size="lg">
-              Browse Properties
-            </Button>
+            <a href="#properties">
+              <Button variant="gold" size="lg">
+                Browse Properties
+              </Button>
+            </a>
             <Button
               variant="secondary"
               size="lg"
               className="border-white/30 text-white hover:bg-white/10"
+              onClick={onOpenChat}
             >
               Chat with AI
             </Button>

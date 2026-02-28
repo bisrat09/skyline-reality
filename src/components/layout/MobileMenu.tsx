@@ -8,10 +8,11 @@ import { cn } from '@/lib/utils/cn';
 interface MobileMenuProps {
   isOpen: boolean;
   onClose: () => void;
+  onOpenChat?: () => void;
   links: { label: string; href: string }[];
 }
 
-export function MobileMenu({ isOpen, onClose, links }: MobileMenuProps) {
+export function MobileMenu({ isOpen, onClose, onOpenChat, links }: MobileMenuProps) {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -67,7 +68,7 @@ export function MobileMenu({ isOpen, onClose, links }: MobileMenuProps) {
         </nav>
 
         <div className="p-4 border-t border-gray-100">
-          <Button variant="gold" className="w-full" onClick={onClose}>
+          <Button variant="gold" className="w-full" onClick={() => { onClose(); onOpenChat?.(); }}>
             Get Started
           </Button>
         </div>

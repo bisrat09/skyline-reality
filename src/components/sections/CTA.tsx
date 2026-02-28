@@ -1,7 +1,11 @@
 import { Button } from '@/components/ui/Button';
 import { Container } from '@/components/ui/Container';
 
-export function CTA() {
+interface CTAProps {
+  onOpenChat?: () => void;
+}
+
+export function CTA({ onOpenChat }: CTAProps) {
   return (
     <section id="contact" className="py-20 md:py-28 bg-navy-900 relative overflow-hidden">
       {/* Decorative gradient */}
@@ -17,16 +21,18 @@ export function CTA() {
             Start a conversation with our AI assistant and get personalized property recommendations in seconds. Available 24/7, no appointment needed.
           </p>
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button variant="gold" size="lg">
+            <Button variant="gold" size="lg" onClick={onOpenChat}>
               Start Chatting Now
             </Button>
-            <Button
-              variant="secondary"
-              size="lg"
-              className="border-white/30 text-white hover:bg-white/10"
-            >
-              Schedule a Call
-            </Button>
+            <a href="/booking">
+              <Button
+                variant="secondary"
+                size="lg"
+                className="border-white/30 text-white hover:bg-white/10"
+              >
+                Schedule a Call
+              </Button>
+            </a>
           </div>
           <p className="mt-6 text-sm text-gray-500">
             No signup required. Get instant answers to your questions.
