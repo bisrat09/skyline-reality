@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils/cn';
 import { Spinner } from './Spinner';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'gold';
+  variant?: 'primary' | 'secondary' | 'ghost' | 'gold' | 'compass';
   size?: 'sm' | 'md' | 'lg';
   isLoading?: boolean;
   children: React.ReactNode;
@@ -15,6 +15,7 @@ const variantStyles = {
   secondary: 'bg-white text-navy-800 border border-navy-800 hover:bg-navy-50',
   ghost: 'bg-transparent text-navy-800 hover:bg-navy-50',
   gold: 'bg-gold-400 text-navy-800 hover:bg-gold-500',
+  compass: 'bg-compass-500 text-white hover:bg-compass-600 active:bg-compass-700',
 };
 
 const sizeStyles = {

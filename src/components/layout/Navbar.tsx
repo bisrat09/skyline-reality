@@ -35,7 +35,7 @@ export function Navbar({ onOpenChat }: NavbarProps) {
       className={cn(
         'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
         isScrolled
-          ? 'bg-white/95 backdrop-blur-sm shadow-sm'
+          ? 'bg-white shadow-sm'
           : 'bg-transparent'
       )}
     >
@@ -54,14 +54,14 @@ export function Navbar({ onOpenChat }: NavbarProps) {
                 className={cn(
                   'text-sm font-medium transition-colors',
                   isScrolled
-                    ? 'text-navy-700 hover:text-navy-900'
+                    ? 'text-gray-600 hover:text-gray-900'
                     : 'text-white/90 hover:text-white'
                 )}
               >
                 {link.label}
               </a>
             ))}
-            <Button variant="gold" size="sm" onClick={onOpenChat}>
+            <Button variant="compass" size="sm" onClick={onOpenChat}>
               Get Started
             </Button>
           </div>
@@ -73,7 +73,7 @@ export function Navbar({ onOpenChat }: NavbarProps) {
             aria-label="Open menu"
           >
             <svg
-              className={cn('h-6 w-6', isScrolled ? 'text-navy-800' : 'text-white')}
+              className={cn('h-6 w-6', isScrolled ? 'text-gray-700' : 'text-white')}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"

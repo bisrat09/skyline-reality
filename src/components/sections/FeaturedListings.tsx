@@ -15,7 +15,7 @@ const featuredListings = seedListings
 
 export function FeaturedListings() {
   return (
-    <section id="properties" className="py-20 md:py-28 bg-gray-50">
+    <section id="properties" className="py-20 md:py-28 bg-white">
       <Container>
         <SectionHeading
           title="Featured Properties"
@@ -23,7 +23,7 @@ export function FeaturedListings() {
         />
         <PropertyGrid listings={featuredListings} columns={3} />
         <div className="mt-12 text-center">
-          <Button variant="primary" size="lg">
+          <Button variant="compass" size="lg">
             View All Listings
           </Button>
         </div>

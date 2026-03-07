@@ -13,7 +13,7 @@ export function SectionHeading({
 }: SectionHeadingProps) {
   return (
     <div className={cn('mb-12', align === 'center' ? 'text-center' : 'text-left')}>
-      <h2 className="font-serif text-3xl md:text-4xl font-bold text-navy-800">
+      <h2 className="font-serif text-3xl md:text-4xl font-bold text-gray-900">
         {title}
       </h2>
       {subtitle && (

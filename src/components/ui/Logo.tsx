@@ -7,7 +7,7 @@ interface LogoProps {
 
 const sizeStyles = {
   sm: 'text-lg',
-  md: 'text-xl',
+  md: 'text-2xl',
   lg: 'text-2xl',
 };
 

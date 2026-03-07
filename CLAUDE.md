@@ -242,6 +242,31 @@ npm run dev
 
 That's it — the chat responds via Claude, leads get saved to Firestore, and bookings go through Cal.com.
 
+## UI Redesign: Compass-Inspired (Post Phase 1)
+
+Redesigned the homepage from a dark navy theme to a bright, Compass.com-inspired layout.
+
+### Key Changes
+- **Hero:** Full-width background property image with subtle dark overlay (`bg-black/40`), white text, centered search bar that opens the AI chat
+- **Navbar:** Transparent over hero with white text, transitions to white bg + shadow on scroll (like Compass)
+- **Color shift:** Primary accent from gold to compass blue (`#0070F3`), dark sections converted to light
+- **New Tailwind colors:** `compass` (blue interactive), `warm` (neutral grays for section alternation)
+- **Button:** New `compass` variant added (blue CTA buttons across all sections)
+- **Section backgrounds:** Hero (image+overlay) → Properties (white) → Services (white) → Stats (warm-100) → Testimonials (white) → CTA (warm-100) → Footer (gray-50)
+- **PropertyCard:** Taller images (h-56), compass-blue neighborhood labels
+- **Footer:** Light gray with dark text (was dark navy with white text)
+- **Logo:** Navbar size bumped to `text-2xl` for better visibility
+
+### Files Modified (14)
+- `tailwind.config.ts`, `src/app/globals.css`
+- `src/components/ui/Button.tsx`, `src/components/ui/SectionHeading.tsx`, `src/components/ui/Logo.tsx`
+- `src/components/layout/Navbar.tsx`, `src/components/layout/Footer.tsx`, `src/components/layout/MobileMenu.tsx`
+- `src/components/sections/Hero.tsx`, `src/components/sections/FeaturedListings.tsx`, `src/components/sections/Services.tsx`, `src/components/sections/Stats.tsx`, `src/components/sections/Testimonials.tsx`, `src/components/sections/CTA.tsx`
+- `src/components/listings/PropertyCard.tsx`
+
+### Tests
+- **292 tests still passing** across 42 test files (no test changes needed — all tests check text content, not CSS)
+
 ## Next Steps
 - **Phase 2:** Automated Lead Follow-Up (SMS/email within 60s, follow-up sequences)
 - **Phase 3:** Lead Dashboard (admin page with analytics)

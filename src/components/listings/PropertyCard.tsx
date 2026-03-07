@@ -42,7 +42,7 @@ export function PropertyCard({ listing, className }: PropertyCardProps) {
   return (
     <Card hover className={cn('flex flex-col', className)}>
       {/* Property image */}
-      <div className="relative h-48">
+      <div className="relative h-56">
         <Image
           src={getPropertyImage(listing)}
           alt={`Property at ${listing.address}`}
@@ -60,7 +60,7 @@ export function PropertyCard({ listing, className }: PropertyCardProps) {
       {/* Content */}
       <div className="flex flex-1 flex-col p-5">
         <div className="mb-2">
-          <p className="text-2xl font-bold text-navy-800">
+          <p className="text-2xl font-bold text-gray-900">
             {formatCurrency(listing.price)}
           </p>
         </div>
@@ -77,7 +77,7 @@ export function PropertyCard({ listing, className }: PropertyCardProps) {
         </div>
 
         {/* Neighborhood */}
-        <p className="text-sm font-medium text-gold-500">{listing.neighborhood}</p>
+        <p className="text-sm font-medium text-compass-500">{listing.neighborhood}</p>
 
         {/* Features */}
         {listing.features.length > 0 && (

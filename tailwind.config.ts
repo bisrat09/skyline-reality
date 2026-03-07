@@ -29,6 +29,19 @@ const config: Config = {
           800: '#46381d',
           900: '#231c0e',
         },
+        compass: {
+          50: '#F7F9FC',
+          100: '#EEF1F6',
+          500: '#0070F3',
+          600: '#005BC4',
+          700: '#004A9E',
+        },
+        warm: {
+          50: '#FAFAFA',
+          100: '#F4F4F4',
+          200: '#E8E8E8',
+          300: '#D1D1D1',
+        },
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],

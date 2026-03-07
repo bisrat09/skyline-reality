@@ -48,9 +48,11 @@ export function useChat({ sessionId }: UseChatOptions): UseChatReturn {
       setMessages((prev) => [...prev, userMessage, assistantMessage]);
       setIsStreaming(true);
 
-      // Build API messages from history + new message
+      // Build API messages from history + new message, filtering out empty ones
       const apiMessages = [
-        ...messages.map((m) => ({ role: m.role, content: m.content })),
+        ...messages
+          .filter((m) => m.content.trim() !== '')
+          .map((m) => ({ role: m.role, content: m.content })),
         { role: userMessage.role, content: userMessage.content },
       ];
 

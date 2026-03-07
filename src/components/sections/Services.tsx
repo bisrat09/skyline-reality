@@ -54,13 +54,13 @@ export function Services() {
             <div
               key={service.title}
               className={cn(
-                'group p-6 rounded-xl border border-gray-100 transition-all hover:shadow-lg hover:border-gold-200',
+                'group p-6 rounded-xl border border-gray-100 transition-all hover:shadow-lg hover:border-compass-500/30',
               )}
             >
-              <div className="mb-4 inline-flex items-center justify-center w-14 h-14 rounded-lg bg-navy-50 text-navy-600 group-hover:bg-gold-50 group-hover:text-gold-600 transition-colors">
+              <div className="mb-4 inline-flex items-center justify-center w-14 h-14 rounded-lg bg-compass-50 text-compass-500 group-hover:bg-compass-100 group-hover:text-compass-600 transition-colors">
                 {service.icon}
               </div>
-              <h3 className="text-lg font-semibold text-navy-800 mb-2">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 {service.title}
               </h3>
               <p className="text-sm text-gray-600 leading-relaxed">

@@ -1,3 +1,6 @@
+import { config } from 'dotenv';
+config({ path: '.env.local' });
+
 import admin from 'firebase-admin';
 import { seedListings } from '../data/seedListings';
 

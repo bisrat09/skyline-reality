@@ -78,6 +78,7 @@ export async function POST(request: NextRequest) {
           controller.enqueue(encoder.encode(`data: ${stopData}\n\n`));
           controller.close();
         } catch (error) {
+          console.error('Stream error:', error);
           const errorData = JSON.stringify({
             type: 'error',
             error: 'Stream interrupted',

@@ -68,7 +68,7 @@ export function MobileMenu({ isOpen, onClose, onOpenChat, links }: MobileMenuPro
         </nav>
 
         <div className="p-4 border-t border-gray-100">
-          <Button variant="gold" className="w-full" onClick={() => { onClose(); onOpenChat?.(); }}>
+          <Button variant="compass" className="w-full" onClick={() => { onClose(); onOpenChat?.(); }}>
             Get Started
           </Button>
         </div>

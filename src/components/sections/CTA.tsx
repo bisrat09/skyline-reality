@@ -7,28 +7,25 @@ interface CTAProps {
 
 export function CTA({ onOpenChat }: CTAProps) {
   return (
-    <section id="contact" className="py-20 md:py-28 bg-navy-900 relative overflow-hidden">
-      {/* Decorative gradient */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-gold-400/10 via-transparent to-transparent" />
-
-      <Container className="relative z-10">
+    <section id="contact" className="py-20 md:py-28 bg-warm-100">
+      <Container>
         <div className="max-w-2xl mx-auto text-center">
-          <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold text-white text-balance">
+          <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 text-balance">
             Ready to Find Your{' '}
-            <span className="text-gold-400">Perfect Home?</span>
+            <span className="text-compass-500">Perfect Home?</span>
           </h2>
-          <p className="mt-6 text-lg text-gray-300 leading-relaxed">
+          <p className="mt-6 text-lg text-gray-600 leading-relaxed">
             Start a conversation with our AI assistant and get personalized property recommendations in seconds. Available 24/7, no appointment needed.
           </p>
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button variant="gold" size="lg" onClick={onOpenChat}>
+            <Button variant="compass" size="lg" onClick={onOpenChat}>
               Start Chatting Now
             </Button>
             <a href="/booking">
               <Button
                 variant="secondary"
                 size="lg"
-                className="border-white/30 text-white hover:bg-white/10"
+                className="border-gray-300 text-gray-700 hover:bg-white"
               >
                 Schedule a Call
               </Button>
