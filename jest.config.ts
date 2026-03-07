@@ -12,6 +12,7 @@ const config: Config = {
     '^firebase/app$': '<rootDir>/__mocks__/firebase/app.ts',
     '^firebase/firestore$': '<rootDir>/__mocks__/firebase/firestore.ts',
     '^firebase-admin$': '<rootDir>/__mocks__/firebase-admin.ts',
+    '^resend$': '<rootDir>/__mocks__/resend.ts',
   },
   testPathIgnorePatterns: ['<rootDir>/__tests__/e2e/'],
   collectCoverageFrom: [

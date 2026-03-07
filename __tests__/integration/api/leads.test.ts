@@ -8,6 +8,7 @@ const mockAdd = jest.fn().mockResolvedValue({ id: 'new-lead-id' });
 const mockUpdate = jest.fn().mockResolvedValue(undefined);
 const mockWhere = jest.fn().mockReturnThis();
 const mockGet = jest.fn().mockResolvedValue({ empty: true, docs: [] });
+const mockDocUpdate = jest.fn().mockResolvedValue(undefined);
 
 jest.mock('@/lib/firebase/admin', () => ({
   adminDb: {
@@ -15,8 +16,24 @@ jest.mock('@/lib/firebase/admin', () => ({
       add: mockAdd,
       where: mockWhere,
       get: mockGet,
+      doc: jest.fn().mockReturnValue({ update: mockDocUpdate }),
     }),
   },
+}));
+
+const mockNotifyNewLead = jest.fn().mockResolvedValue({
+  agentNotification: { success: true },
+  leadWelcome: { success: true },
+});
+
+jest.mock('@/lib/email/leadNotification', () => ({
+  notifyNewLead: (...args: unknown[]) => mockNotifyNewLead(...args),
+}));
+
+const mockScheduleFollowUps = jest.fn().mockResolvedValue(['fu-1', 'fu-2', 'fu-3']);
+
+jest.mock('@/lib/firestore/followUps', () => ({
+  scheduleFollowUps: (...args: unknown[]) => mockScheduleFollowUps(...args),
 }));
 
 function createRequest(body: Record<string, unknown>) {
@@ -40,6 +57,25 @@ describe('POST /api/leads', () => {
     expect(res.status).toBe(201);
     expect(data.success).toBe(true);
     expect(data.leadId).toBe('new-lead-id');
+  });
+
+  it('returns isNewLead true for new leads', async () => {
+    const res = await POST(
+      createRequest({ sessionId: 's1', email: 'a@b.com', conversationTranscript: [] })
+    );
+    const data = await res.json();
+    expect(data.isNewLead).toBe(true);
+  });
+
+  it('returns isNewLead false for updated leads', async () => {
+    const mockDocRef = { ref: { update: mockUpdate } };
+    mockGet.mockResolvedValue({ empty: false, docs: [{ id: 'existing-id', ...mockDocRef }] });
+
+    const res = await POST(
+      createRequest({ sessionId: 's1', email: 'a@b.com', conversationTranscript: [] })
+    );
+    const data = await res.json();
+    expect(data.isNewLead).toBe(false);
   });
 
   it('returns 400 without email or phone', async () => {
@@ -115,6 +151,16 @@ describe('POST /api/leads', () => {
     );
     const arg = mockAdd.mock.calls[0][0];
     expect(arg.status).toBe('new');
+  });
+
+  it('initializes email tracking fields on new leads', async () => {
+    await POST(
+      createRequest({ sessionId: 's1', email: 'a@b.com', conversationTranscript: [] })
+    );
+    const arg = mockAdd.mock.calls[0][0];
+    expect(arg.followUpScheduled).toBe(false);
+    expect(arg.welcomeEmailSent).toBe(false);
+    expect(arg.agentNotificationSent).toBe(false);
   });
 
   it('updates existing lead for same session', async () => {

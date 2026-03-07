@@ -267,7 +267,67 @@ Redesigned the homepage from a dark navy theme to a bright, Compass.com-inspired
 ### Tests
 - **292 tests still passing** across 42 test files (no test changes needed — all tests check text content, not CSS)
 
+## Phase 2: Automated Lead Follow-Up — COMPLETE
+
+Automated email follow-up system: when a lead is captured via the chatbot, instant emails are sent within seconds, and a scheduled Day 1/3/7 follow-up sequence keeps them engaged.
+
+### Architecture
+- **Email provider:** Resend (`resend` npm package)
+- **Instant emails (fire-and-forget):** Triggered from `POST /api/leads` on NEW lead creation only
+  1. Agent notification: urgency badge (HOT/WARM/COLD), lead summary, conversation highlights, "Contact Lead Now" CTA
+  2. Lead welcome: personalized greeting, search criteria confirmation, "Browse Listings" CTA
+- **Follow-up sequence:** Day 1 (new listings), Day 3 (market insights), Day 7 (re-engagement)
+- **Scheduling:** Firestore `follow_ups` collection + Vercel Cron (`GET /api/cron/follow-ups`)
+- **Cron job:** Runs daily at 10am (configurable in `vercel.json`), protected by `CRON_SECRET` Bearer auth
+
+### New Files (15)
+- `src/types/email.ts` — FollowUp, EmailResult, template data types
+- `src/lib/resend.ts` — Resend client singleton
+- `src/lib/email/sendEmail.ts` — Email send wrapper with error handling
+- `src/lib/email/leadNotification.ts` — Instant notification orchestrator + `extractConversationHighlights()`
+- `src/lib/email/templates/agentNotification.ts` — Agent notification HTML template
+- `src/lib/email/templates/leadWelcome.ts` — Lead welcome HTML template
+- `src/lib/email/templates/followUpDay1.ts` — Day 1 follow-up template
+- `src/lib/email/templates/followUpDay3.ts` — Day 3 follow-up template
+- `src/lib/email/templates/followUpDay7.ts` — Day 7 follow-up template
+- `src/lib/email/templates/index.ts` — Barrel export
+- `src/lib/firestore/followUps.ts` — Follow-up CRUD (schedule, getPending, markSent/Failed, cancel)
+- `src/app/api/cron/follow-ups/route.ts` — Vercel Cron endpoint
+- `vercel.json` — Cron schedule configuration
+- `__mocks__/resend.ts` — Jest mock for Resend
+
+### Modified Files (6)
+- `src/types/lead.ts` — Added `followUpScheduled`, `welcomeEmailSent`, `agentNotificationSent` booleans
+- `src/types/api.ts` — Added `isNewLead` to `CreateLeadResponse`
+- `src/app/api/leads/route.ts` — Fire-and-forget email triggering + follow-up scheduling on new lead creation
+- `jest.config.ts` — Added `resend` mock mapping
+- `.env.example` — Added `RESEND_API_KEY`, `AGENT_EMAIL`, `AGENT_NAME`, `CRON_SECRET`
+- `__tests__/unit/components/ui/Logo.test.tsx` — Fixed pre-existing test (text-xl → text-2xl)
+
+### Firestore Schema: `follow_ups` Collection
+```
+id, leadId, leadEmail, leadName, type (day1|day3|day7),
+status (pending|sent|failed|cancelled), scheduledAt, sentAt,
+failedAt, failureReason, createdAt, updatedAt
+```
+
+### New Environment Variables
+```
+RESEND_API_KEY=re_xxxxx          # From resend.com
+AGENT_EMAIL=agent@example.com    # Real estate agent's email for notifications
+AGENT_NAME=Sarah Chen            # Agent name for email personalization
+CRON_SECRET=your-secret          # Protects cron endpoint from unauthorized access
+```
+
+### Tests
+- **376 tests passing** across 49 test files (84 new tests)
+- New test files: agentNotification, leadWelcome, followUps (templates), sendEmail, leadNotification, firestore/followUps, cron-follow-ups, updated leads API tests
+
+### Notes
+- Resend free tier: sends from `onboarding@resend.dev` (domain verification needed for production)
+- Vercel Hobby plan: daily cron only (hourly on Pro plan)
+- Firestore composite index needed for `follow_ups` (status + scheduledAt) — auto-generated URL on first query error
+
 ## Next Steps
-- **Phase 2:** Automated Lead Follow-Up (SMS/email within 60s, follow-up sequences)
 - **Phase 3:** Lead Dashboard (admin page with analytics)
 - **Phase 4:** Voice AI Agent (after-hours phone answering)

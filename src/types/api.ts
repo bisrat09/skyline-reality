@@ -33,6 +33,7 @@ export interface CreateLeadRequest {
 export interface CreateLeadResponse {
   success: true;
   leadId: string;
+  isNewLead: boolean;
 }
 
 export interface ListingsResponse {

@@ -25,7 +25,7 @@ describe('Logo', () => {
 
   it('renders in medium size by default', () => {
     const { container } = render(<Logo />);
-    expect(container.firstChild).toHaveClass('text-xl');
+    expect(container.firstChild).toHaveClass('text-2xl');
   });
 
   it('renders in large size', () => {

@@ -20,6 +20,9 @@ export interface LeadData {
   conversationTranscript: ChatMessage[];
   source: string;
   sessionId: string;
+  followUpScheduled: boolean;
+  welcomeEmailSent: boolean;
+  agentNotificationSent: boolean;
   createdAt: string;
   updatedAt: string;
 }

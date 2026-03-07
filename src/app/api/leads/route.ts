@@ -25,6 +25,60 @@ function calculateUrgency(lead: Partial<CreateLeadRequest>): LeadUrgency {
   return 'cold';
 }
 
+async function triggerLeadNotifications(params: {
+  leadId: string;
+  body: CreateLeadRequest;
+  urgency: LeadUrgency;
+  now: string;
+}) {
+  const { adminDb } = await import('@/lib/firebase/admin');
+
+  // Send instant emails (agent notification + lead welcome)
+  try {
+    const { notifyNewLead } = await import('@/lib/email/leadNotification');
+    const results = await notifyNewLead({
+      leadId: params.leadId,
+      name: params.body.name || null,
+      email: params.body.email || null,
+      phone: params.body.phone || null,
+      urgency: params.urgency,
+      budgetMin: params.body.budgetMin || null,
+      budgetMax: params.body.budgetMax || null,
+      timeline: params.body.timeline || null,
+      preferredNeighborhoods: params.body.preferredNeighborhoods || [],
+      bedroomsMin: params.body.bedroomsMin || null,
+      propertyTypePreference: params.body.propertyTypePreference || null,
+      conversationTranscript: params.body.conversationTranscript || [],
+    });
+
+    await adminDb.collection('leads').doc(params.leadId).update({
+      agentNotificationSent: results.agentNotification.success,
+      welcomeEmailSent: results.leadWelcome.success,
+    });
+  } catch (err) {
+    console.error('Instant email error:', err);
+  }
+
+  // Schedule follow-up sequence (Day 1, 3, 7)
+  try {
+    if (params.body.email) {
+      const { scheduleFollowUps } = await import('@/lib/firestore/followUps');
+      await scheduleFollowUps({
+        leadId: params.leadId,
+        leadEmail: params.body.email,
+        leadName: params.body.name || null,
+        createdAt: params.now,
+      });
+
+      await adminDb.collection('leads').doc(params.leadId).update({
+        followUpScheduled: true,
+      });
+    }
+  } catch (err) {
+    console.error('Follow-up scheduling error:', err);
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body: CreateLeadRequest = await request.json();
@@ -60,7 +114,10 @@ export async function POST(request: NextRequest) {
         urgency,
         updatedAt: now,
       });
-      return NextResponse.json({ success: true, leadId: existingDoc.id }, { status: 200 });
+      return NextResponse.json(
+        { success: true, leadId: existingDoc.id, isNewLead: false },
+        { status: 200 }
+      );
     }
 
     const leadDoc = {
@@ -78,12 +135,27 @@ export async function POST(request: NextRequest) {
       conversationTranscript: body.conversationTranscript || [],
       source: 'website_chat',
       sessionId: body.sessionId,
+      followUpScheduled: false,
+      welcomeEmailSent: false,
+      agentNotificationSent: false,
       createdAt: now,
       updatedAt: now,
     };
 
     const docRef = await adminDb.collection('leads').add(leadDoc);
-    return NextResponse.json({ success: true, leadId: docRef.id }, { status: 201 });
+
+    // Fire-and-forget: send instant emails + schedule follow-ups
+    triggerLeadNotifications({
+      leadId: docRef.id,
+      body,
+      urgency,
+      now,
+    }).catch((err) => console.error('Lead notification error:', err));
+
+    return NextResponse.json(
+      { success: true, leadId: docRef.id, isNewLead: true },
+      { status: 201 }
+    );
   } catch (error) {
     console.error('Leads API error:', error);
     return NextResponse.json(
