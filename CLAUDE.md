@@ -328,6 +328,61 @@ CRON_SECRET=your-secret          # Protects cron endpoint from unauthorized acce
 - Vercel Hobby plan: daily cron only (hourly on Pro plan)
 - Firestore composite index needed for `follow_ups` (status + scheduledAt) — auto-generated URL on first query error
 
+## Phase 3: Lead Dashboard — COMPLETE
+
+Admin dashboard at `/dashboard` for real estate agents to view leads, update statuses, and see analytics.
+
+### Architecture
+- **Auth:** Env-based `DASHBOARD_PASSWORD` with Bearer token (same pattern as cron endpoint)
+- **Client stores password in `sessionStorage`** via `useDashboardAuth` hook
+- **Data fetching:** `'use client'` page with `useDashboard` hook → API routes → admin SDK
+- **Transcript:** Inline-expandable rows (not modals) — keeps agent in context
+- **Analytics:** Computed server-side in `/api/dashboard/stats` from single Firestore query
+
+### New Files (15)
+- `src/types/dashboard.ts` — DashboardLead, LeadsQueryParams, LeadsResponse, DashboardStats types
+- `src/lib/firestore/dashboardLeads.ts` — Admin SDK queries (getAllLeads, getLeadById, updateLeadStatus, getDashboardStats)
+- `src/app/api/dashboard/leads/route.ts` — GET leads with filters + auth
+- `src/app/api/dashboard/leads/[id]/route.ts` — PATCH lead status + auth
+- `src/app/api/dashboard/stats/route.ts` — GET analytics + auth
+- `src/hooks/useDashboardAuth.ts` — Auth state (login/logout/getAuthHeaders/handleUnauthorized)
+- `src/hooks/useDashboard.ts` — Data fetching (leads, stats, filters, status updates)
+- `src/components/dashboard/LoginForm.tsx` — Password login form
+- `src/components/dashboard/StatsCards.tsx` — 4 stat cards + status/urgency breakdowns
+- `src/components/dashboard/LeadFilters.tsx` — Status, urgency, date range filters
+- `src/components/dashboard/StatusSelect.tsx` — Inline status change dropdown
+- `src/components/dashboard/LeadRow.tsx` — Lead table row (desktop + mobile card)
+- `src/components/dashboard/LeadTable.tsx` — Responsive table with expandable rows
+- `src/components/dashboard/TranscriptView.tsx` — Chat transcript display
+- `src/app/dashboard/page.tsx` — Dashboard page (auth gate + content)
+
+### Modified Files (2)
+- `.env.example` — Added `DASHBOARD_PASSWORD`
+- `CLAUDE.md` — Phase 3 documentation
+
+### New Environment Variables
+```
+DASHBOARD_PASSWORD=your-dashboard-password-here  # Protects /dashboard admin page
+```
+
+### Dashboard Features
+1. **Stats Cards:** Total leads, leads this week, avg response time, conversion rate
+2. **Status/Urgency Breakdowns:** Visual progress bars by status and urgency
+3. **Lead Table:** Sortable with name, contact, urgency badge, status badge, created date
+4. **Status Updates:** Inline dropdown to change lead status (new → contacted → showing_booked → closed)
+5. **Transcript Viewer:** Expandable inline view of full conversation transcript
+6. **Filters:** Filter by status, urgency, date range with reset button
+7. **Mobile Responsive:** Table switches to card layout on mobile
+8. **Auth:** Password login with sessionStorage persistence
+
+### Tests
+- **471 tests passing** across 57 test files (95 new tests)
+- New test files: dashboardLeads (Firestore), dashboard-leads API, dashboard-stats API, useDashboardAuth, useDashboard, LoginForm, DashboardComponents (StatsCards/LeadFilters/StatusSelect/TranscriptView/LeadRow/LeadTable), DashboardPage
+
+### Notes
+- Firestore composite index may be needed for `leads` (status + createdAt) — auto-generated URL on first query error
+- `statusChangedAt` field added on first status change from 'new' for response time tracking
+- Dashboard accessible at `/dashboard` — not linked from public pages (direct URL access for agents)
+
 ## Next Steps
-- **Phase 3:** Lead Dashboard (admin page with analytics)
 - **Phase 4:** Voice AI Agent (after-hours phone answering)
