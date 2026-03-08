@@ -16,6 +16,7 @@ export async function getAllLeads(
 
   let ref: FirebaseFirestore.Query = adminDb.collection(COLLECTION);
 
+  // Only use orderBy when there are no where clauses (avoids composite index requirement)
   if (status) {
     ref = ref.where('status', '==', status);
   }
@@ -23,7 +24,9 @@ export async function getAllLeads(
     ref = ref.where('urgency', '==', urgency);
   }
 
-  ref = ref.orderBy('createdAt', 'desc');
+  if (!status && !urgency) {
+    ref = ref.orderBy('createdAt', 'desc');
+  }
 
   const snapshot = await ref.get();
 
@@ -33,6 +36,11 @@ export async function getAllLeads(
       ...doc.data(),
     })
   ) as DashboardLead[];
+
+  // Sort client-side when Firestore orderBy wasn't used
+  if (status || urgency) {
+    leads.sort((a, b) => (b.createdAt > a.createdAt ? 1 : -1));
+  }
 
   // Client-side date filtering (Firestore doesn't support inequality on multiple fields)
   if (startDate) {
@@ -105,7 +113,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
   const snapshot = await adminDb.collection(COLLECTION).get();
 
   const leads = snapshot.docs.map(
-    (doc: { data: () => Record<string, unknown> }) => doc.data()
+    (doc: { data: () => Record<string, unknown> }) => doc.data() as unknown
   ) as (LeadData & { statusChangedAt?: string })[];
 
   const now = new Date();

@@ -4,6 +4,15 @@ import { cn } from '@/lib/utils/cn';
 import { formatTime } from '@/lib/utils/formatDate';
 import type { ChatMessage } from '@/types/chat';
 
+function cleanTranscriptContent(content: string): string {
+  return content
+    .replace(/\[SUGGEST_PROPERTY:[^\]]+\]/g, '')
+    .replace(/\[BOOK_SHOWING:[^\]]+\]/g, '')
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
 interface TranscriptViewProps {
   transcript: ChatMessage[];
 }
@@ -35,7 +44,7 @@ export function TranscriptView({ transcript }: TranscriptViewProps) {
                 : 'bg-gray-100 text-gray-800'
             )}
           >
-            <p className="whitespace-pre-wrap">{msg.content}</p>
+            <p className="whitespace-pre-wrap">{cleanTranscriptContent(msg.content)}</p>
             {msg.timestamp && (
               <p
                 className={cn(
