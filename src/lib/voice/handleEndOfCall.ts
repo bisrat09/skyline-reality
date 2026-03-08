@@ -1,5 +1,5 @@
 import type { VapiEndOfCallReportEvent } from '@/types/voice';
-import { extractLeadFields } from '@/lib/leadExtraction';
+import { extractLeadFields, extractUserLines } from '@/lib/leadExtraction';
 import {
   createVoiceCall,
   updateVoiceCall,
@@ -9,7 +9,8 @@ import {
 export async function handleEndOfCall(
   event: VapiEndOfCallReportEvent
 ): Promise<void> {
-  const fields = extractLeadFields(event.transcript);
+  const userContent = extractUserLines(event.transcript);
+  const fields = extractLeadFields(userContent);
 
   // Calculate duration in seconds
   const startedAt = new Date(event.call.startedAt);

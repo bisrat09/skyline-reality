@@ -42,9 +42,21 @@ const SEATTLE_NEIGHBORHOODS = [
 // Regex patterns for lead field extraction
 const EMAIL_REGEX = /[\w.+-]+@[\w-]+\.[\w.-]+/;
 const PHONE_REGEX = /(?:\+?1[-.\s]?)?(?:\(?\d{3}\)?[-.\s]?)?\d{3}[-.\s]?\d{4}/;
-const BUDGET_REGEX_DOLLAR = /\$\s?([\d,]+)\s?[kKmM]?\b/g;
-const BUDGET_REGEX_WORD = /\b(?:budget|price|max|afford|spend|around|under|up to)\s+\$?\s?([\d,]+)\s?[kKmM]?\b/gi;
+const BUDGET_REGEX_DOLLAR = /\$\s?([\d,.]+)\s?(?:million|mil|[kKmM])?\b/g;
+const BUDGET_REGEX_WORD = /\b(?:budget|price|max|afford|spend|around|under|up to)\s+\$?\s?([\d,.]+)\s?(?:million|mil|[kKmM])?\b/gi;
 const BEDROOMS_REGEX = /(\d)\s*(?:bed(?:room)?s?|bd|br)\b/i;
+
+/**
+ * Extract only user/caller lines from a voice transcript.
+ * Filters out AI/Assistant lines so extraction only parses what the caller said.
+ */
+export function extractUserLines(transcript: string): string {
+  return transcript
+    .split('\n')
+    .filter((line) => /^(?:User|Caller|Customer)\s*:/i.test(line))
+    .map((line) => line.replace(/^(?:User|Caller|Customer)\s*:\s*/i, ''))
+    .join('\n');
+}
 
 /**
  * Extract lead fields from a single message string.
@@ -53,10 +65,13 @@ const BEDROOMS_REGEX = /(\d)\s*(?:bed(?:room)?s?|bd|br)\b/i;
 export function extractLeadFields(content: string): ExtractedLeadFields {
   const fields: ExtractedLeadFields = {};
 
-  // Email
+  // Email (strip trailing periods that aren't part of the domain)
   const emailMatch = content.match(EMAIL_REGEX);
-  if (emailMatch && isValidEmail(emailMatch[0])) {
-    fields.email = emailMatch[0];
+  if (emailMatch) {
+    const email = emailMatch[0].replace(/\.+$/, '');
+    if (isValidEmail(email)) {
+      fields.email = email;
+    }
   }
 
   // Phone
@@ -65,21 +80,21 @@ export function extractLeadFields(content: string): ExtractedLeadFields {
     fields.phone = phoneMatch[0];
   }
 
-  // Budget (find dollar amounts from "$500K" or "budget 500000")
+  // Budget (find dollar amounts from "$500K", "budget 500000", "1.2 million")
   const budgetMatches: number[] = [];
   let match;
   for (const regex of [BUDGET_REGEX_DOLLAR, BUDGET_REGEX_WORD]) {
     regex.lastIndex = 0;
     while ((match = regex.exec(content)) !== null) {
-      let amount = parseInt(match[1].replace(/,/g, ''), 10);
-      // Handle "K" (thousands) and "M" (millions) suffixes
-      const lastChar = match[0].charAt(match[0].length - 1);
-      const afterChar = content.charAt(match.index + match[0].length);
-      if (/[mM]/.test(lastChar) || (amount < 1000 && /[mM]/.test(afterChar))) {
+      let amount = parseFloat(match[1].replace(/,/g, ''));
+      // Handle suffix: "million"/"mil"/"M" or "K"
+      const suffix = match[0].toLowerCase();
+      if (/million|mil$/.test(suffix) || /[mM]$/.test(match[0])) {
         amount *= 1000000;
-      } else if (/[kK]/.test(lastChar) || (amount < 10000 && /[kK]/.test(afterChar))) {
+      } else if (/[kK]$/.test(match[0])) {
         amount *= 1000;
       }
+      amount = Math.round(amount);
       if (amount > 0) budgetMatches.push(amount);
     }
   }
@@ -125,9 +140,9 @@ export function extractLeadFields(content: string): ExtractedLeadFields {
   const timelinePatterns = [
     /\b(asap|immediately|right away|as soon as possible)\b/i,
     /\b(this month|next month|within a month)\b/i,
-    /\b(1-3 months|one to three months)\b/i,
-    /\b(3-6 months|three to six months)\b/i,
-    /\b(6-12 months|six to twelve months)\b/i,
+    /\b(1-3 months|one to three months|1 to 3 months)\b/i,
+    /\b(3-6 months|three to six months|3 to 6 months)\b/i,
+    /\b(6-12 months|six to twelve months|6 to 12 months)\b/i,
     /\b(this year|next year|within a year)\b/i,
     /\b(just (browsing|looking)|no rush)\b/i,
     /\b(?:in|within|about|around)\s+(\d+)\s+months?\b/i,

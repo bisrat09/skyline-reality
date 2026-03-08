@@ -35,7 +35,7 @@ const baseEvent: VapiEndOfCallReportEvent = {
     startedAt: '2026-03-08T10:00:00Z',
     endedAt: '2026-03-08T10:05:00Z',
   },
-  transcript: 'Hi, my name is Jane. My email is jane@example.com. I am looking for a 3 bedroom in Ballard.',
+  transcript: 'AI: Welcome to Skyline Realty!\nUser: Hi, my name is Jane. My email is jane@example.com. I am looking for a 3 bedroom in Ballard.',
   messages: [],
   phoneNumber: '2065551234',
 };
