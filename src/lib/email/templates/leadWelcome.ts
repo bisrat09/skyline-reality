@@ -1,6 +1,8 @@
 import type { LeadWelcomeData } from '@/types/email';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 
+const SITE_URL = process.env.SITE_URL || 'http://localhost:3000';
+
 export function buildLeadWelcomeEmail(data: LeadWelcomeData): {
   subject: string;
   html: string;
@@ -28,7 +30,7 @@ export function buildLeadWelcomeEmail(data: LeadWelcomeData): {
     criteriaItems.length > 0
       ? `<div style="background:#F4F4F4;padding:16px;border-radius:8px;margin:16px 0;">
           <p style="margin:0 0 8px;font-weight:600;color:#1B2A4A;">Here&rsquo;s what we noted:</p>
-          ${criteriaItems.map((c) => `<p style="margin:4px 0;color:#4B5563;">&check; ${c}</p>`).join('')}
+          ${criteriaItems.map((c) => `<p style="margin:4px 0;color:#4B5563;">&#10003; ${c}</p>`).join('')}
          </div>`
       : '';
 
@@ -49,7 +51,7 @@ export function buildLeadWelcomeEmail(data: LeadWelcomeData): {
       In the meantime, feel free to browse our latest listings or schedule a showing at your convenience.
     </p>
     <div style="text-align:center;margin:24px 0;">
-      <a href="https://skyline-realty.vercel.app" style="display:inline-block;background:#0070F3;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600;">
+      <a href="${SITE_URL}/#properties" style="display:inline-block;background:#0070F3;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600;">
         Browse Listings
       </a>
     </div>

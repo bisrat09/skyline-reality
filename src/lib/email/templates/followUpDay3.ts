@@ -1,5 +1,7 @@
 import type { FollowUpEmailData } from '@/types/email';
 
+const SITE_URL = process.env.SITE_URL || 'http://localhost:3000';
+
 export function buildFollowUpDay3Email(data: FollowUpEmailData): {
   subject: string;
   html: string;
@@ -40,7 +42,7 @@ export function buildFollowUpDay3Email(data: FollowUpEmailData): {
       Want to chat about your search? Our AI assistant is available 24/7, or we can schedule a call at your convenience.
     </p>
     <div style="text-align:center;margin:24px 0;">
-      <a href="https://skyline-realty.vercel.app" style="display:inline-block;background:#0070F3;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600;">
+      <a href="${SITE_URL}" style="display:inline-block;background:#0070F3;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600;">
         Chat With Our AI
       </a>
     </div>

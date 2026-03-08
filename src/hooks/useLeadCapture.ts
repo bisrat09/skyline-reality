@@ -33,7 +33,8 @@ const SEATTLE_NEIGHBORHOODS = [
 // Regex patterns for lead field extraction
 const EMAIL_REGEX = /[\w.+-]+@[\w-]+\.[\w.-]+/;
 const PHONE_REGEX = /(?:\+?1[-.\s]?)?(?:\(?\d{3}\)?[-.\s]?)?\d{3}[-.\s]?\d{4}/;
-const BUDGET_REGEX = /\$\s?([\d,]+)\s?[kK]?\b/g;
+const BUDGET_REGEX_DOLLAR = /\$\s?([\d,]+)\s?[kKmM]?\b/g;
+const BUDGET_REGEX_WORD = /\b(?:budget|price|max|afford|spend|around|under|up to)\s+\$?\s?([\d,]+)\s?[kKmM]?\b/gi;
 const BEDROOMS_REGEX = /(\d)\s*(?:bed(?:room)?s?|bd|br)\b/i;
 
 /**
@@ -55,25 +56,33 @@ export function extractLeadFields(content: string): ExtractedLeadFields {
     fields.phone = phoneMatch[0];
   }
 
-  // Budget (find dollar amounts)
+  // Budget (find dollar amounts from "$500K" or "budget 500000")
   const budgetMatches: number[] = [];
   let match;
-  while ((match = BUDGET_REGEX.exec(content)) !== null) {
-    let amount = parseInt(match[1].replace(/,/g, ''), 10);
-    // Handle "K" suffix (e.g., $500K -> $500,000)
-    if (/[kK]/.test(content.charAt(match.index + match[0].length - 1)) ||
-        (amount < 10000 && /[kK]/.test(content.charAt(match.index + match[0].length)))) {
-      amount *= 1000;
+  for (const regex of [BUDGET_REGEX_DOLLAR, BUDGET_REGEX_WORD]) {
+    regex.lastIndex = 0;
+    while ((match = regex.exec(content)) !== null) {
+      let amount = parseInt(match[1].replace(/,/g, ''), 10);
+      // Handle "K" (thousands) and "M" (millions) suffixes
+      const lastChar = match[0].charAt(match[0].length - 1);
+      const afterChar = content.charAt(match.index + match[0].length);
+      if (/[mM]/.test(lastChar) || (amount < 1000 && /[mM]/.test(afterChar))) {
+        amount *= 1000000;
+      } else if (/[kK]/.test(lastChar) || (amount < 10000 && /[kK]/.test(afterChar))) {
+        amount *= 1000;
+      }
+      if (amount > 0) budgetMatches.push(amount);
     }
-    if (amount > 0) budgetMatches.push(amount);
   }
-  if (budgetMatches.length >= 2) {
-    fields.budgetMin = Math.min(...budgetMatches);
-    fields.budgetMax = Math.max(...budgetMatches);
-  } else if (budgetMatches.length === 1) {
+  // Deduplicate
+  const uniqueBudgets = Array.from(new Set(budgetMatches));
+  if (uniqueBudgets.length >= 2) {
+    fields.budgetMin = Math.min(...uniqueBudgets);
+    fields.budgetMax = Math.max(...uniqueBudgets);
+  } else if (uniqueBudgets.length === 1) {
     // Single budget: treat as max with 20% lower bound
-    fields.budgetMax = budgetMatches[0];
-    fields.budgetMin = Math.round(budgetMatches[0] * 0.8);
+    fields.budgetMax = uniqueBudgets[0];
+    fields.budgetMin = Math.round(uniqueBudgets[0] * 0.8);
   }
 
   // Bedrooms
@@ -82,11 +91,15 @@ export function extractLeadFields(content: string): ExtractedLeadFields {
     fields.bedrooms = parseInt(bedroomMatch[1], 10);
   }
 
-  // Neighborhoods
+  // Neighborhoods (fuzzy: "Queen Ann" matches "Queen Anne", etc.)
   const lowerContent = content.toLowerCase();
-  const matchedNeighborhoods = SEATTLE_NEIGHBORHOODS.filter((n) =>
-    lowerContent.includes(n.toLowerCase())
-  );
+  const matchedNeighborhoods = SEATTLE_NEIGHBORHOODS.filter((n) => {
+    const lower = n.toLowerCase();
+    // Exact substring match OR content contains the neighborhood minus trailing 'e'/'s'
+    return lowerContent.includes(lower) ||
+      lowerContent.includes(lower.replace(/e$/, '')) ||
+      lower.includes(lowerContent.match(new RegExp(lower.replace(/e$/, ''), 'i'))?.[0] || '___');
+  });
   if (matchedNeighborhoods.length > 0) {
     fields.neighborhoods = matchedNeighborhoods;
   }
@@ -108,6 +121,8 @@ export function extractLeadFields(content: string): ExtractedLeadFields {
     /\b(6-12 months|six to twelve months)\b/i,
     /\b(this year|next year|within a year)\b/i,
     /\b(just (browsing|looking)|no rush)\b/i,
+    /\b(?:in|within|about|around)\s+(\d+)\s+months?\b/i,
+    /\b(\d+)\s+months?\s+(?:from now|or so)\b/i,
   ];
   for (const pattern of timelinePatterns) {
     const tMatch = content.match(pattern);
@@ -122,7 +137,7 @@ export function extractLeadFields(content: string): ExtractedLeadFields {
     fields.propertyType = 'condo';
   } else if (/\btownhouse?s?\b/i.test(content) || /\btownhome?s?\b/i.test(content)) {
     fields.propertyType = 'townhouse';
-  } else if (/\bsingle[\s-]?family\b/i.test(content) || /\bhouse\b/i.test(content)) {
+  } else if (/\bsingle[\s-]?family\b/i.test(content) || /\bhouse\b/i.test(content) || /\bfamily\s+home\b/i.test(content) || /\bhome\b/i.test(content)) {
     fields.propertyType = 'single_family';
   }
 

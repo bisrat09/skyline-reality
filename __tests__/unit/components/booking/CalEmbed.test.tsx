@@ -16,7 +16,7 @@ describe('CalEmbed', () => {
   it('uses default calLink when not provided', () => {
     render(<CalEmbed />);
     const embed = screen.getByTestId('cal-embed');
-    expect(embed).toHaveAttribute('calLink', 'skyline-realty/showing');
+    expect(embed).toHaveAttribute('calLink', 'bisrat09/property-showing');
   });
 
   it('merges custom className', () => {

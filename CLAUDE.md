@@ -384,5 +384,37 @@ DASHBOARD_PASSWORD=your-dashboard-password-here  # Protects /dashboard admin pag
 - `statusChangedAt` field added on first status change from 'new' for response time tracking
 - Dashboard accessible at `/dashboard` — not linked from public pages (direct URL access for agents)
 
+## Manual Testing & Bug Fixes (Post Phase 3)
+
+### Bugs Found & Fixed
+1. **Cal.com 404 error** — Default cal link `skyline-realty/showing` didn't exist. Updated to `bisrat09/property-showing` in `CalEmbed.tsx`
+2. **Cal.com date grid hidden** — Booking embed container was `h-[350px] overflow-hidden`, cutting off dates. Changed to `h-[420px] overflow-y-auto` in `BookingPrompt.tsx`
+3. **Budget "M" suffix not recognized** — "1M" wasn't parsed as $1,000,000. Added `[mM]` support to budget regexes in `useLeadCapture.ts`
+
+### Previous Session Fixes (lead capture improvements)
+- Budget now matches "budget 1000000" and "max 700K" (not just "$700K")
+- Neighborhoods fuzzy match: "Queen Ann" → "Queen Anne"
+- Property type: "family home" and "home" → `single_family`
+- Timeline: "in 3 months" / "in 6 months" patterns captured
+
+### Files Modified
+- `src/components/booking/CalEmbed.tsx` — Cal.com link fix
+- `src/components/booking/BookingPrompt.tsx` — Embed height/overflow fix
+- `src/hooks/useLeadCapture.ts` — Budget M suffix + previous lead capture fixes
+- `__tests__/unit/components/booking/CalEmbed.test.tsx` — Updated default link assertion
+- `src/lib/email/templates/*.ts` — Email template improvements
+- `src/prompts/systemPrompt.ts` — System prompt refinements
+
+### Manual Testing Checklist
+- Full checklist saved in `MANUAL_TESTING.md` (40+ test cases for Phase 2 & 3)
+- **Test 2.1.4 PASSED:** Email failure graceful (invalid Resend key → lead still created 201)
+
+### Cal.com Setup
+- Account: `bisrat09` on cal.com
+- Event type: "Property Showing" (30 min, Cal Video)
+- Embed link: `bisrat09/property-showing`
+- Availability: Configure working hours in Cal.com dashboard (Availability → Working Hours)
+
 ## Next Steps
+- **Continue manual testing** — resume from `MANUAL_TESTING.md`
 - **Phase 4:** Voice AI Agent (after-hours phone answering)

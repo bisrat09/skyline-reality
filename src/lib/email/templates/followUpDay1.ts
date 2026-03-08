@@ -1,6 +1,8 @@
 import type { FollowUpEmailData } from '@/types/email';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 
+const SITE_URL = process.env.SITE_URL || 'http://localhost:3000';
+
 export function buildFollowUpDay1Email(data: FollowUpEmailData): {
   subject: string;
   html: string;
@@ -34,7 +36,7 @@ export function buildFollowUpDay1Email(data: FollowUpEmailData): {
       The Seattle market is moving quickly, and new listings are added daily. Check out the latest homes that match your criteria.
     </p>
     <div style="text-align:center;margin:24px 0;">
-      <a href="https://skyline-realty.vercel.app" style="display:inline-block;background:#0070F3;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600;">
+      <a href="${SITE_URL}/#properties" style="display:inline-block;background:#0070F3;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600;">
         View Matching Listings
       </a>
     </div>
@@ -42,7 +44,7 @@ export function buildFollowUpDay1Email(data: FollowUpEmailData): {
       Ready to see a home in person? Schedule a showing at a time that works for you.
     </p>
     <div style="text-align:center;margin:16px 0;">
-      <a href="https://skyline-realty.vercel.app/booking" style="display:inline-block;background:white;color:#0070F3;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600;border:2px solid #0070F3;">
+      <a href="${SITE_URL}/booking" style="display:inline-block;background:white;color:#0070F3;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600;border:2px solid #0070F3;">
         Schedule a Showing
       </a>
     </div>

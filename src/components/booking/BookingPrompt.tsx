@@ -55,7 +55,7 @@ export function BookingPrompt({ propertyAddress, className }: BookingPromptProps
               Close
             </button>
           </div>
-          <div className="h-[350px] overflow-hidden rounded-lg">
+          <div className="h-[420px] overflow-y-auto rounded-lg">
             <CalEmbed />
           </div>
         </div>

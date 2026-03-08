@@ -9,7 +9,7 @@ interface CalEmbedProps {
   className?: string;
 }
 
-const DEFAULT_CAL_LINK = 'skyline-realty/showing';
+const DEFAULT_CAL_LINK = 'bisrat09/property-showing';
 
 export function CalEmbed({ calLink = DEFAULT_CAL_LINK, className }: CalEmbedProps) {
   useEffect(() => {

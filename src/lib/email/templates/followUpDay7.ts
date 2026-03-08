@@ -1,5 +1,7 @@
 import type { FollowUpEmailData } from '@/types/email';
 
+const SITE_URL = process.env.SITE_URL || 'http://localhost:3000';
+
 export function buildFollowUpDay7Email(data: FollowUpEmailData): {
   subject: string;
   html: string;
@@ -23,17 +25,17 @@ export function buildFollowUpDay7Email(data: FollowUpEmailData): {
     </p>
     <div style="background:#F4F4F4;padding:16px;border-radius:8px;margin:16px 0;">
       <p style="margin:0 0 8px;font-weight:600;color:#1B2A4A;">Here&rsquo;s what we can do for you:</p>
-      <p style="margin:4px 0;color:#4B5563;">&check; Browse the latest Seattle listings</p>
-      <p style="margin:4px 0;color:#4B5563;">&check; Get a free consultation with our team</p>
-      <p style="margin:4px 0;color:#4B5563;">&check; Schedule private showings at your convenience</p>
+      <p style="margin:4px 0;color:#4B5563;">&#10003; Browse the latest Seattle listings</p>
+      <p style="margin:4px 0;color:#4B5563;">&#10003; Get a free consultation with our team</p>
+      <p style="margin:4px 0;color:#4B5563;">&#10003; Schedule private showings at your convenience</p>
     </div>
     <div style="text-align:center;margin:24px 0;">
-      <a href="https://skyline-realty.vercel.app" style="display:inline-block;background:#0070F3;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600;">
+      <a href="${SITE_URL}/#properties" style="display:inline-block;background:#0070F3;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600;">
         See What&rsquo;s New
       </a>
     </div>
     <div style="text-align:center;margin:16px 0;">
-      <a href="https://skyline-realty.vercel.app/booking" style="display:inline-block;background:white;color:#0070F3;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600;border:2px solid #0070F3;">
+      <a href="${SITE_URL}/booking" style="display:inline-block;background:white;color:#0070F3;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600;border:2px solid #0070F3;">
         Book a Free Consultation
       </a>
     </div>
