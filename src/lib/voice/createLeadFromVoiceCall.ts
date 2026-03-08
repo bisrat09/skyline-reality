@@ -20,6 +20,7 @@ export async function createLeadFromVoiceCall(
   // Convert transcript to ChatMessage format for consistent storage
   const conversationTranscript: ChatMessage[] = [
     {
+      id: `voice-${params.callId}`,
       role: 'user',
       content: `[Voice call transcript]\n${params.transcript}`,
       timestamp: now,

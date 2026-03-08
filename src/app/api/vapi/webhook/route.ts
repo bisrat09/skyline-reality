@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ received: true }, { status: 200 });
 
       default:
-        console.warn('[Vapi Webhook] Unknown event type:', event.type);
+        console.warn('[Vapi Webhook] Unknown event type:', (event as { type: string }).type);
         return NextResponse.json({ received: true }, { status: 200 });
     }
   } catch (error) {

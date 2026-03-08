@@ -35,7 +35,7 @@ export function useDashboardAuth(): UseDashboardAuthReturn {
     setIsAuthenticated(false);
   }, []);
 
-  const getAuthHeaders = useCallback(() => {
+  const getAuthHeaders = useCallback((): Record<string, string> => {
     const password = sessionStorage.getItem(STORAGE_KEY);
     return password ? { Authorization: `Bearer ${password}` } : {};
   }, []);
