@@ -192,10 +192,11 @@ Highlight Seattle-specific features: mountain views, water views, walkability sc
 ```bash
 npm run dev          # Start dev server
 npm run build        # Production build
-npm test             # Run all unit + integration tests
+npm test             # Run all unit + integration tests (565 tests)
 npm run test:coverage # Tests with coverage report
 npm run test:e2e     # Playwright E2E tests
 npm run seed         # Seed Firestore with sample listings
+npm run setup:vapi   # Create/update Vapi assistant with tools
 ```
 
 ## Setup Checklist (to get the demo fully working)
@@ -406,8 +407,8 @@ DASHBOARD_PASSWORD=your-dashboard-password-here  # Protects /dashboard admin pag
 - `src/prompts/systemPrompt.ts` — System prompt refinements
 
 ### Manual Testing Checklist
-- Full checklist saved in `MANUAL_TESTING.md` (40+ test cases for Phase 2 & 3)
-- **Test 2.1.4 PASSED:** Email failure graceful (invalid Resend key → lead still created 201)
+- Full checklist saved in `MANUAL_TESTING.md` (47 test cases for Phase 2 & 3)
+- **44/47 tests PASSED** — 3 deferred (follow-up Day 1/3/7 templates need cron to fire after scheduled dates)
 
 ### Cal.com Setup
 - Account: `bisrat09` on cal.com
@@ -415,6 +416,91 @@ DASHBOARD_PASSWORD=your-dashboard-password-here  # Protects /dashboard admin pag
 - Embed link: `bisrat09/property-showing`
 - Availability: Configure working hours in Cal.com dashboard (Availability → Working Hours)
 
+## Phase 4: Voice AI Agent (Vapi) — COMPLETE
+
+AI phone agent that answers after-hours calls, qualifies callers, suggests properties, books showings, and sends the agent a summary.
+
+### Architecture
+- **Voice AI provider:** Vapi (hosted, webhook-based, phone-first)
+- **Model:** Claude (via Vapi's Anthropic integration)
+- **Webhook:** `POST /api/vapi/webhook` — handles tool-calls, status-update, end-of-call-report
+- **Tools:** captureLeadInfo, suggestProperties, bookShowing (executed server-side via webhook)
+- **Dashboard:** Voice Calls tab added to `/dashboard` with expandable rows
+- **Email:** Agent notification on call end with transcript + lead summary
+- **Setup script:** `npm run setup:vapi` — creates/updates Vapi assistant with tools + system prompt
+
+### New Files (19)
+- `src/types/voice.ts` — VapiWebhookEvent, VoiceCall, CallStatus types + type guards
+- `src/prompts/voiceSystemPrompt.ts` — Voice-optimized system prompt with listings context
+- `src/lib/vapi.ts` — Vapi API client singleton (getCall, listCalls)
+- `src/lib/firestore/voiceCalls.ts` — CRUD for `voice_calls` collection
+- `src/lib/voice/handleToolCalls.ts` — captureLeadInfo/suggestProperties/bookShowing handlers
+- `src/lib/voice/handleStatusUpdate.ts` — Call status tracking in Firestore
+- `src/lib/voice/handleEndOfCall.ts` — Transcript save + lead creation + email notification
+- `src/lib/voice/createLeadFromVoiceCall.ts` — Creates lead with `source: 'voice_call'`
+- `src/lib/email/templates/voiceCallSummary.ts` — HTML email template for call summary
+- `src/lib/email/voiceCallNotification.ts` — Email orchestrator for voice call notifications
+- `src/app/api/vapi/webhook/route.ts` — Main webhook POST handler with secret validation
+- `src/app/api/dashboard/voice-calls/route.ts` — GET voice calls with auth
+- `src/components/dashboard/VoiceCallRow.tsx` — Expandable table row with transcript
+- `src/components/dashboard/VoiceCallTable.tsx` — Table with empty state
+- `src/hooks/useVoiceCalls.ts` — Fetch hook for voice calls
+- `src/scripts/setupVapi.ts` — Vapi assistant setup/update script
+- `__mocks__/vapi.ts` — Jest mock for Vapi client
+
+### Modified Files (5)
+- `src/app/dashboard/page.tsx` — Added Leads/Voice Calls tab switcher
+- `jest.config.ts` — Added Vapi mock mapping
+- `.env.example` — Added VAPI env vars
+- `package.json` — Added `setup:vapi` script
+
+### Firestore Schema: `voice_calls` Collection
+```
+id, vapiCallId, phoneNumber, leadId, status (queued|ringing|in-progress|forwarding|ended),
+duration, transcript, summary, recordingUrl, extractedFields (ExtractedLeadFields),
+createdAt, updatedAt, endedAt
+```
+
+### New Environment Variables
+```
+VAPI_API_KEY=your-vapi-api-key             # From dashboard.vapi.ai
+VAPI_PHONE_NUMBER_ID=your-phone-number-id  # Vapi phone number ID
+VAPI_ASSISTANT_ID=your-assistant-id        # Created by setup:vapi script
+VAPI_WEBHOOK_SECRET=your-webhook-secret    # Shared secret for webhook validation
+```
+
+### Vapi Setup
+```bash
+# 1. Sign up at dashboard.vapi.ai
+# 2. Get API key and (optionally) buy a phone number
+# 3. Set env vars in .env.local
+# 4. Run setup script:
+npm run setup:vapi
+# 5. Copy the assistant ID to .env.local
+# 6. Deploy so the webhook URL is live
+```
+
+### Tests
+- **565 tests passing** across 71 test files (94 new tests)
+- New test files: voice types, voiceSystemPrompt, vapi client, voiceCalls Firestore, handleToolCalls, handleStatusUpdate, handleEndOfCall, createLeadFromVoiceCall, voiceCallSummary template, voiceCallNotification, vapi-webhook API, dashboard-voice-calls API, VoiceCallComponents, useVoiceCalls
+
+### Notes
+- Vapi uses `x-vapi-secret` header for webhook authentication
+- Webhook validation is optional (skipped if `VAPI_WEBHOOK_SECRET` not set)
+- Voice calls create leads with `source: 'voice_call'` for attribution
+- End-of-call report triggers email notification to agent (same Resend setup as Phase 2)
+
+## Commands
+
+```bash
+npm run dev          # Start dev server
+npm run build        # Production build
+npm test             # Run all unit + integration tests (565 tests)
+npm run test:coverage # Tests with coverage report
+npm run test:e2e     # Playwright E2E tests
+npm run seed         # Seed Firestore with sample listings
+npm run setup:vapi   # Create/update Vapi assistant with tools
+```
+
 ## Next Steps
-- **Continue manual testing** — resume from `MANUAL_TESTING.md`
-- **Phase 4:** Voice AI Agent (after-hours phone answering)
+- **Deploy to Vercel** when ready
