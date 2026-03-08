@@ -1,6 +1,6 @@
 import type { ExtractedLeadFields } from '@/types/lead';
 import type { ChatMessage } from '@/types/chat';
-import { calculateUrgency } from '@/lib/firestore/leads';
+import { calculateUrgency } from '@/lib/leadExtraction';
 import { linkCallToLead } from '@/lib/firestore/voiceCalls';
 
 interface CreateLeadFromCallParams {

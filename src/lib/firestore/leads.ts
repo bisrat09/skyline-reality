@@ -8,35 +8,14 @@ import {
   where,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
-import type { LeadData, LeadUrgency } from '@/types/lead';
-import type { ChatMessage } from '@/types/chat';
+import type { LeadData } from '@/types/lead';
 import type { CreateLeadRequest } from '@/types/api';
+import { calculateUrgency } from '@/lib/leadExtraction';
+
+// Re-export for backwards compatibility
+export { calculateUrgency };
 
 const COLLECTION = 'leads';
-
-export function calculateUrgency(lead: Partial<CreateLeadRequest>): LeadUrgency {
-  let score = 0;
-
-  if (lead.email) score += 2;
-  if (lead.phone) score += 2;
-  if (lead.name) score += 1;
-  if (lead.budgetMin || lead.budgetMax) score += 2;
-  if (lead.preferredNeighborhoods?.length) score += 1;
-  if (lead.bedroomsMin) score += 1;
-
-  if (lead.timeline) {
-    const tl = lead.timeline.toLowerCase();
-    if (['asap', 'immediately', '1-3 months', 'this month'].some((k) => tl.includes(k))) {
-      score += 3;
-    } else if (['3-6 months', 'this year'].some((k) => tl.includes(k))) {
-      score += 1;
-    }
-  }
-
-  if (score >= 8) return 'hot';
-  if (score >= 4) return 'warm';
-  return 'cold';
-}
 
 export async function createLead(
   data: CreateLeadRequest

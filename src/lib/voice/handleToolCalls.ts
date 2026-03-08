@@ -8,7 +8,9 @@ export async function handleToolCalls(
       let result: string;
 
       try {
-        const args = JSON.parse(tc.function.arguments);
+        const args = typeof tc.function.arguments === 'string'
+          ? JSON.parse(tc.function.arguments)
+          : tc.function.arguments;
 
         switch (tc.function.name) {
           case 'captureLeadInfo':
