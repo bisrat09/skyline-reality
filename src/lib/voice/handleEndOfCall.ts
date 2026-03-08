@@ -1,5 +1,5 @@
 import type { VapiEndOfCallReportEvent } from '@/types/voice';
-import { extractLeadFields } from '@/hooks/useLeadCapture';
+import { extractLeadFields } from '@/lib/leadExtraction';
 import {
   createVoiceCall,
   updateVoiceCall,
