@@ -34,9 +34,14 @@ export function LeadTable({
   if (leads.length === 0) {
     return (
       <Card className="p-12 text-center">
-        <p className="text-gray-500">No leads found.</p>
-        <p className="text-sm text-gray-400 mt-1">
-          Leads will appear here once visitors interact with the chatbot.
+        <div className="mx-auto w-16 h-16 rounded-full bg-compass-50 flex items-center justify-center mb-4">
+          <svg className="w-8 h-8 text-compass-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
+          </svg>
+        </div>
+        <p className="text-gray-700 font-medium">No leads captured yet</p>
+        <p className="text-sm text-gray-400 mt-2 max-w-sm mx-auto">
+          When visitors interact with the AI chatbot and share their contact info, their leads will appear here automatically.
         </p>
       </Card>
     );

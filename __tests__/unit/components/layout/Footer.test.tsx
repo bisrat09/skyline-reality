@@ -15,19 +15,19 @@ describe('Footer', () => {
   it('renders Properties section links', () => {
     render(<Footer />);
     expect(screen.getByText('Browse Listings')).toBeInTheDocument();
-    expect(screen.getByText('Market Reports')).toBeInTheDocument();
+    expect(screen.getByText('Book a Showing')).toBeInTheDocument();
   });
 
   it('renders Company section links', () => {
     render(<Footer />);
     expect(screen.getByText('About Us')).toBeInTheDocument();
-    expect(screen.getByText('Our Team')).toBeInTheDocument();
+    expect(screen.getByText('Testimonials')).toBeInTheDocument();
   });
 
   it('renders Support section links', () => {
     render(<Footer />);
-    expect(screen.getByText('FAQ')).toBeInTheDocument();
-    expect(screen.getByText('Privacy Policy')).toBeInTheDocument();
+    expect(screen.getByText('Contact')).toBeInTheDocument();
+    expect(screen.getByText('Chat with AI')).toBeInTheDocument();
   });
 
   it('renders copyright text', () => {

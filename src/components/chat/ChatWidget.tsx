@@ -47,7 +47,7 @@ export const ChatWidget = forwardRef<ChatWidgetHandle, ChatWidgetProps>(
             'flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-all duration-300 hover:scale-105',
             isOpen
               ? 'bg-gray-700 hover:bg-gray-600'
-              : 'bg-gold-400 hover:bg-gold-500'
+              : 'bg-gold-400 hover:bg-gold-500 chat-pulse'
           )}
           aria-label={isOpen ? 'Close chat' : 'Open chat'}
         >

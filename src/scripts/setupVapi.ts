@@ -141,7 +141,7 @@ async function setupVapi() {
       tools,
     },
     voice: {
-      provider: 'eleven-labs',
+      provider: '11labs',
       voiceId: 'sarah', // Professional female voice
     },
     firstMessage:

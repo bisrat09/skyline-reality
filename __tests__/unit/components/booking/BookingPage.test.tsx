@@ -4,7 +4,7 @@ import BookingPage from '@/app/booking/page';
 describe('BookingPage', () => {
   it('renders the page heading', () => {
     render(<BookingPage />);
-    expect(screen.getByText('Book a Showing')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Book a Showing' })).toBeInTheDocument();
   });
 
   it('renders the subtitle', () => {

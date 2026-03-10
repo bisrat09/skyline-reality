@@ -4,21 +4,15 @@ import { Container } from '@/components/ui/Container';
 const footerLinks = {
   properties: [
     { label: 'Browse Listings', href: '#properties' },
-    { label: 'New Construction', href: '#' },
-    { label: 'Open Houses', href: '#' },
-    { label: 'Market Reports', href: '#' },
+    { label: 'Book a Showing', href: '/booking' },
   ],
   company: [
     { label: 'About Us', href: '#about' },
-    { label: 'Our Team', href: '#' },
     { label: 'Testimonials', href: '#testimonials' },
-    { label: 'Careers', href: '#' },
   ],
   support: [
     { label: 'Contact', href: '#contact' },
-    { label: 'FAQ', href: '#' },
-    { label: 'Privacy Policy', href: '#' },
-    { label: 'Terms of Service', href: '#' },
+    { label: 'Chat with AI', href: '#contact' },
   ],
 };
 

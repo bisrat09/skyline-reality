@@ -94,7 +94,7 @@ describe('VoiceCallTable', () => {
 
   it('shows empty state when no calls', () => {
     render(<VoiceCallTable calls={[]} isLoading={false} />);
-    expect(screen.getByText('No voice calls yet.')).toBeInTheDocument();
+    expect(screen.getByText('No voice calls yet')).toBeInTheDocument();
   });
 
   it('shows spinner when loading', () => {

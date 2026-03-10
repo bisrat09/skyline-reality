@@ -10,10 +10,11 @@ export function Hero({ onOpenChat }: HeroProps) {
     <section className="relative min-h-[90vh] flex items-center pt-20">
       {/* Background image */}
       <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat bg-gray-800"
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
+          backgroundColor: '#1B2A4A',
           backgroundImage:
-            "url('https://images.unsplash.com/photo-1502175353174-a7a70e73b362?w=1920&h=1080&fit=crop')",
+            "linear-gradient(135deg, #1B2A4A 0%, #273c63 50%, #1B2A4A 100%), url('https://images.unsplash.com/photo-1502175353174-a7a70e73b362?w=1920&h=1080&fit=crop')",
         }}
       />
       {/* Subtle dark overlay — lets the image show through warm and rich */}

@@ -38,7 +38,7 @@ export function ChatPanel({ isOpen, onClose, sessionId, className }: ChatPanelPr
   return (
     <div
       className={cn(
-        'flex flex-col w-[380px] h-[560px] max-sm:chat-panel-mobile bg-white rounded-2xl shadow-2xl border border-gray-200 transition-all duration-300',
+        'flex flex-col w-[380px] h-[560px] max-sm:chat-panel-mobile bg-white rounded-2xl shadow-2xl border border-gray-200 transition-all duration-300 origin-bottom-right',
         isOpen
           ? 'opacity-100 translate-y-0 scale-100'
           : 'opacity-0 translate-y-4 scale-95 pointer-events-none',

@@ -297,7 +297,7 @@ describe('LeadTable', () => {
 
   it('shows empty state', () => {
     render(<LeadTable {...defaultProps} leads={[]} />);
-    expect(screen.getByText('No leads found.')).toBeInTheDocument();
+    expect(screen.getByText('No leads captured yet')).toBeInTheDocument();
   });
 
   it('renders table headers', () => {
