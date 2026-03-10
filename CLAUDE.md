@@ -502,5 +502,26 @@ npm run seed         # Seed Firestore with sample listings
 npm run setup:vapi   # Create/update Vapi assistant with tools
 ```
 
-## Next Steps
-- **Deploy to Vercel** when ready
+## Deployment — COMPLETE
+
+- **Live at:** https://skyline-reality.vercel.app
+- **GitHub auto-deploy:** bisrat09/skyline-reality → Vercel (push to main triggers deploy)
+- **Vercel env vars:** 19 configured (Firebase, Anthropic, Resend, Cal.com, Dashboard, Vapi)
+- **Vapi assistant:** `d08aa0be-8536-483e-bd54-e5dabaf2fc04` (tested and working)
+- **Latest commit:** `b969ee7` — demo prep (favicon, fonts, 404, loading skeleton, sales docs)
+
+## Demo Prep — COMPLETE (Commit `b969ee7`)
+
+### Visual Polish
+- Favicon: `src/app/icon.svg` (navy square + gold "S") + `src/app/apple-icon.png`
+- OG image: `src/app/opengraph-image.tsx` (dynamic, edge runtime)
+- Fonts: `next/font/google` (Inter + Playfair Display)
+- Chat button pulse animation, smoother panel transition
+- Custom 404: `src/app/not-found.tsx`
+- Dashboard loading skeleton: `src/app/dashboard/loading.tsx`
+- Dashboard empty states improved, footer dead links removed, hero gradient fallback
+
+### Sales Documents
+- `DEMO_SCRIPT.md` — 12-15 min walkthrough script with objection handlers
+- `README.md` — client-facing project overview
+- `PITCH.md` — sales one-pager with ROI calculator and pricing
