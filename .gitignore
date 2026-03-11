@@ -25,6 +25,9 @@ npm-debug.log*
 # local env files
 .env*.local
 
+# testing notes (may contain env-specific values)
+MANUAL_TESTING.md
+
 # vercel
 .vercel
 

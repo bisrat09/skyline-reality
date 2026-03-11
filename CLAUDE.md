@@ -507,7 +507,7 @@ npm run setup:vapi   # Create/update Vapi assistant with tools
 - **Live at:** https://skyline-reality.vercel.app
 - **GitHub auto-deploy:** bisrat09/skyline-reality → Vercel (push to main triggers deploy)
 - **Vercel env vars:** 19 configured (Firebase, Anthropic, Resend, Cal.com, Dashboard, Vapi)
-- **Vapi assistant:** `d08aa0be-8536-483e-bd54-e5dabaf2fc04` (tested and working)
+- **Vapi assistant:** Set via `VAPI_ASSISTANT_ID` env var (tested and working)
 - **Latest commit:** `b969ee7` — demo prep (favicon, fonts, 404, loading skeleton, sales docs)
 
 ## Demo Prep — COMPLETE (Commit `b969ee7`)
@@ -525,3 +525,43 @@ npm run setup:vapi   # Create/update Vapi assistant with tools
 - `DEMO_SCRIPT.md` — 12-15 min walkthrough script with objection handlers
 - `README.md` — client-facing project overview
 - `PITCH.md` — sales one-pager with ROI calculator and pricing
+
+## Custom Skill: `/skyline-realty-demo`
+
+A Claude Code skill for scaffolding city-specific Skyline Realty demos. Stored at `~/.claude/skills/skyline-realty-demo/` (personal, available across all projects).
+
+### Usage
+```
+/skyline-realty-demo Austin TX
+/skyline-realty-demo Denver CO
+```
+
+### What It Does
+1. Researches the target city (neighborhoods, prices, landmarks, walk scores)
+2. Generates 15 realistic seed listings in `src/data/seedListings.ts`
+3. Updates system prompts (chat + voice) — swaps "Seattle" for the new city
+4. Updates UI components (Hero, Services, Footer) with city name
+5. Updates SEO metadata (title, keywords, OpenGraph, Twitter)
+6. Updates email templates with city references
+7. Updates `DEMO_SCRIPT.md` with city-specific examples
+8. Runs tests + build to verify nothing broke
+
+### Skill Files
+- `SKILL.md` — Main instructions with 8-phase workflow
+- `listing-template.md` — TypeScript structure, distribution targets, regional feature ideas
+- `change-manifest.md` — Exact files to modify vs. files to leave alone
+- `demo-script-template.md` — Demo walkthrough template with city placeholders
+
+### Files Modified Per City Adaptation (13)
+- `src/data/seedListings.ts` — full rewrite (15 listings)
+- `src/prompts/systemPrompt.ts` — city name swaps
+- `src/prompts/voiceSystemPrompt.ts` — city name swaps
+- `src/components/sections/Hero.tsx` — heading city name
+- `src/components/sections/Services.tsx` — city knowledge reference
+- `src/components/layout/Footer.tsx` — tagline + footer city
+- `src/app/layout.tsx` — metadata, keywords, OG tags
+- `src/lib/email/templates/*.ts` — 6 email templates (city references)
+- `DEMO_SCRIPT.md` — example queries, neighborhoods, area codes
+
+### Files That Do NOT Change
+All types, API routes, hooks, dashboard, components/ui, booking, tests, config — infrastructure is city-agnostic.
