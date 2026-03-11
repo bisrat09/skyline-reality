@@ -74,6 +74,7 @@ export async function getPendingFollowUps(): Promise<FollowUp[]> {
     .collection(COLLECTION)
     .where('status', '==', 'pending')
     .where('scheduledAt', '<=', now)
+    .limit(100)
     .get();
 
   return snapshot.docs.map((doc: { id: string; data: () => Record<string, unknown> }) => ({

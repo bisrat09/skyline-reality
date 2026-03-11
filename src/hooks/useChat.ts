@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import type { ChatMessage } from '@/types/chat';
 
 interface UseChatOptions {
@@ -24,6 +24,12 @@ export function useChat({ sessionId }: UseChatOptions): UseChatReturn {
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const messagesRef = useRef<ChatMessage[]>([]);
+
+  // Keep ref in sync with state for use inside sendMessage closure
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
 
   const sendMessage = useCallback(
     async (content: string) => {
@@ -50,7 +56,7 @@ export function useChat({ sessionId }: UseChatOptions): UseChatReturn {
 
       // Build API messages from history + new message, filtering out empty ones
       const apiMessages = [
-        ...messages
+        ...messagesRef.current
           .filter((m) => m.content.trim() !== '')
           .map((m) => ({ role: m.role, content: m.content })),
         { role: userMessage.role, content: userMessage.content },
@@ -147,7 +153,7 @@ export function useChat({ sessionId }: UseChatOptions): UseChatReturn {
         abortRef.current = null;
       }
     },
-    [messages, isStreaming, sessionId]
+    [isStreaming, sessionId]
   );
 
   const clearMessages = useCallback(() => {

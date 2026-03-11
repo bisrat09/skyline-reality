@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { timingSafeCompare } from '@/lib/auth';
 import type {
   VapiWebhookEvent,
   VapiToolCallEvent,
@@ -8,10 +9,11 @@ import type {
 
 function validateWebhook(request: NextRequest): boolean {
   const secret = process.env.VAPI_WEBHOOK_SECRET;
-  if (!secret) return true; // Validation optional if secret not configured
+  if (!secret) return false; // Fail-secure: reject if secret not configured
 
   const signature = request.headers.get('x-vapi-secret');
-  return signature === secret;
+  if (!signature) return false;
+  return timingSafeCompare(signature, secret);
 }
 
 export async function POST(request: NextRequest) {

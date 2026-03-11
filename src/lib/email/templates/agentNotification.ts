@@ -1,5 +1,6 @@
 import type { AgentNotificationData } from '@/types/email';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { escapeHtml } from '@/lib/utils/escapeHtml';
 
 const URGENCY_STYLES = {
   hot: { bg: '#FEE2E2', text: '#DC2626', label: 'HOT' },
@@ -13,7 +14,7 @@ export function buildAgentNotificationEmail(data: AgentNotificationData): {
 } {
   const style = URGENCY_STYLES[data.urgency];
 
-  const subject = `[${style.label}] New Lead: ${data.leadName || 'Unknown'} — ${data.timeline || 'No timeline'}`;
+  const subject = `[${style.label}] New Lead: ${escapeHtml(data.leadName || 'Unknown')} — ${escapeHtml(data.timeline || 'No timeline')}`;
 
   const budget =
     data.budgetMin && data.budgetMax
@@ -26,7 +27,7 @@ export function buildAgentNotificationEmail(data: AgentNotificationData): {
 
   const highlightsHtml = data.conversationHighlights
     .slice(0, 5)
-    .map((h) => `<li style="margin-bottom:4px;color:#4B5563;">&ldquo;${h}&rdquo;</li>`)
+    .map((h) => `<li style="margin-bottom:4px;color:#4B5563;">&ldquo;${escapeHtml(h)}&rdquo;</li>`)
     .join('');
 
   const html = `<!DOCTYPE html>
@@ -40,15 +41,15 @@ export function buildAgentNotificationEmail(data: AgentNotificationData): {
     <div style="display:inline-block;background:${style.bg};color:${style.text};padding:4px 12px;border-radius:12px;font-weight:600;font-size:14px;margin-bottom:16px;">
       ${style.label} LEAD
     </div>
-    <h2 style="margin:12px 0 8px;color:#1B2A4A;">${data.leadName || 'Unknown Name'}</h2>
+    <h2 style="margin:12px 0 8px;color:#1B2A4A;">${escapeHtml(data.leadName || 'Unknown Name')}</h2>
     <table style="width:100%;border-collapse:collapse;margin:16px 0;">
-      <tr><td style="padding:8px 0;color:#6B7280;width:140px;">Email</td><td style="padding:8px 0;color:#111827;">${data.leadEmail || 'Not provided'}</td></tr>
-      <tr><td style="padding:8px 0;color:#6B7280;">Phone</td><td style="padding:8px 0;color:#111827;">${data.leadPhone || 'Not provided'}</td></tr>
+      <tr><td style="padding:8px 0;color:#6B7280;width:140px;">Email</td><td style="padding:8px 0;color:#111827;">${escapeHtml(data.leadEmail || 'Not provided')}</td></tr>
+      <tr><td style="padding:8px 0;color:#6B7280;">Phone</td><td style="padding:8px 0;color:#111827;">${escapeHtml(data.leadPhone || 'Not provided')}</td></tr>
       <tr><td style="padding:8px 0;color:#6B7280;">Budget</td><td style="padding:8px 0;color:#111827;">${budget}</td></tr>
-      <tr><td style="padding:8px 0;color:#6B7280;">Timeline</td><td style="padding:8px 0;color:#111827;">${data.timeline || 'Not specified'}</td></tr>
-      <tr><td style="padding:8px 0;color:#6B7280;">Neighborhoods</td><td style="padding:8px 0;color:#111827;">${data.preferredNeighborhoods.length > 0 ? data.preferredNeighborhoods.join(', ') : 'Not specified'}</td></tr>
+      <tr><td style="padding:8px 0;color:#6B7280;">Timeline</td><td style="padding:8px 0;color:#111827;">${escapeHtml(data.timeline || 'Not specified')}</td></tr>
+      <tr><td style="padding:8px 0;color:#6B7280;">Neighborhoods</td><td style="padding:8px 0;color:#111827;">${data.preferredNeighborhoods.length > 0 ? data.preferredNeighborhoods.map(n => escapeHtml(n)).join(', ') : 'Not specified'}</td></tr>
       <tr><td style="padding:8px 0;color:#6B7280;">Bedrooms</td><td style="padding:8px 0;color:#111827;">${data.bedroomsMin ? `${data.bedroomsMin}+` : 'Not specified'}</td></tr>
-      <tr><td style="padding:8px 0;color:#6B7280;">Property Type</td><td style="padding:8px 0;color:#111827;">${data.propertyTypePreference ? data.propertyTypePreference.replace('_', ' ') : 'Not specified'}</td></tr>
+      <tr><td style="padding:8px 0;color:#6B7280;">Property Type</td><td style="padding:8px 0;color:#111827;">${data.propertyTypePreference ? escapeHtml(data.propertyTypePreference.replace('_', ' ')) : 'Not specified'}</td></tr>
     </table>
     ${highlightsHtml ? `
     <div style="margin-top:16px;">
@@ -57,7 +58,7 @@ export function buildAgentNotificationEmail(data: AgentNotificationData): {
     </div>` : ''}
     ${data.leadEmail ? `
     <div style="margin-top:24px;text-align:center;">
-      <a href="mailto:${data.leadEmail}" style="display:inline-block;background:#0070F3;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600;">
+      <a href="mailto:${escapeHtml(data.leadEmail)}" style="display:inline-block;background:#0070F3;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600;">
         Contact Lead Now
       </a>
     </div>` : ''}

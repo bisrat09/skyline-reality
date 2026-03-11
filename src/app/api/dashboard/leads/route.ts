@@ -1,15 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { authenticateBearer } from '@/lib/auth';
+import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
 import type { LeadStatus, LeadUrgency } from '@/types/lead';
 import type { LeadsQueryParams } from '@/types/dashboard';
 
-function authenticate(request: NextRequest): boolean {
-  const authHeader = request.headers.get('authorization');
-  const password = process.env.DASHBOARD_PASSWORD;
-  return !!password && authHeader === `Bearer ${password}`;
-}
-
 export async function GET(request: NextRequest) {
-  if (!authenticate(request)) {
+  const { allowed } = checkRateLimit('dashboard-auth', getClientIp(request), {
+    windowMs: 900_000,
+    maxRequests: 10,
+  });
+  if (!allowed) {
+    return NextResponse.json({ error: 'Too many attempts. Try again later.' }, { status: 429 });
+  }
+
+  if (!authenticateBearer(request, 'DASHBOARD_PASSWORD')) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

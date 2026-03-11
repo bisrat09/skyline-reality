@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ChatHeader } from './ChatHeader';
 import { ChatInput } from './ChatInput';
 import { ChatMessage } from './ChatMessage';
@@ -8,6 +8,7 @@ import { ChatTypingIndicator } from './ChatTypingIndicator';
 import { useChat } from '@/hooks/useChat';
 import { useLeadCapture } from '@/hooks/useLeadCapture';
 import { cn } from '@/lib/utils/cn';
+import type { PropertyListing } from '@/types/listing';
 
 interface ChatPanelProps {
   isOpen: boolean;
@@ -20,6 +21,15 @@ export function ChatPanel({ isOpen, onClose, sessionId, className }: ChatPanelPr
   const { messages, isStreaming, error, sendMessage } = useChat({ sessionId });
   const { processAndSubmit } = useLeadCapture({ sessionId });
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [listings, setListings] = useState<PropertyListing[]>([]);
+
+  // Fetch active listings for property card rendering
+  useEffect(() => {
+    fetch('/api/listings?status=active')
+      .then((res) => res.json())
+      .then((data) => setListings(data.listings || []))
+      .catch(() => {}); // Graceful failure
+  }, []);
 
   // Auto-scroll to bottom on new messages
   useEffect(() => {
@@ -64,7 +74,7 @@ export function ChatPanel({ isOpen, onClose, sessionId, className }: ChatPanelPr
         )}
 
         {messages.map((msg) => (
-          <ChatMessage key={msg.id} message={msg} />
+          <ChatMessage key={msg.id} message={msg} listings={listings} />
         ))}
 
         {isStreaming && messages[messages.length - 1]?.content === '' && (

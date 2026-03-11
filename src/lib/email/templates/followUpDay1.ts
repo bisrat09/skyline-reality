@@ -1,5 +1,6 @@
 import type { FollowUpEmailData } from '@/types/email';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { escapeHtml } from '@/lib/utils/escapeHtml';
 
 const SITE_URL = process.env.SITE_URL || 'http://localhost:3000';
 
@@ -7,12 +8,12 @@ export function buildFollowUpDay1Email(data: FollowUpEmailData): {
   subject: string;
   html: string;
 } {
-  const name = data.leadName || 'there';
+  const name = escapeHtml(data.leadName || 'there');
   const neighborhoodText =
     data.preferredNeighborhoods.length > 0
-      ? data.preferredNeighborhoods.join(', ')
+      ? data.preferredNeighborhoods.map(n => escapeHtml(n)).join(', ')
       : 'Seattle';
-  const subject = `New listings in ${data.preferredNeighborhoods[0] || 'Seattle'} that match your search, ${name}`;
+  const subject = `New listings in ${escapeHtml(data.preferredNeighborhoods[0] || 'Seattle')} that match your search, ${name}`;
 
   const budgetLine =
     data.budgetMin && data.budgetMax

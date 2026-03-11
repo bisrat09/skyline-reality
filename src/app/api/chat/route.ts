@@ -1,13 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
 import type { ChatRequest } from '@/types/api';
 
 export async function POST(request: NextRequest) {
+  const { allowed } = checkRateLimit('chat', getClientIp(request), {
+    windowMs: 60_000,
+    maxRequests: 10,
+  });
+  if (!allowed) {
+    return NextResponse.json(
+      { success: false, error: 'Too many requests. Please try again shortly.' },
+      { status: 429 }
+    );
+  }
+
   try {
     const body: ChatRequest = await request.json();
 
     if (!body.messages || body.messages.length === 0) {
       return NextResponse.json(
         { success: false, error: 'messages array is required and must not be empty' },
+        { status: 400 }
+      );
+    }
+
+    if (body.messages.length > 50) {
+      return NextResponse.json(
+        { success: false, error: 'Too many messages. Maximum 50 per request.' },
         { status: 400 }
       );
     }
@@ -19,10 +38,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const VALID_ROLES = ['user', 'assistant'];
     for (const msg of body.messages) {
       if (!msg.role || !msg.content) {
         return NextResponse.json(
           { success: false, error: 'Each message must have role and content' },
+          { status: 400 }
+        );
+      }
+      if (!VALID_ROLES.includes(msg.role)) {
+        return NextResponse.json(
+          { success: false, error: 'Invalid message role. Must be "user" or "assistant".' },
+          { status: 400 }
+        );
+      }
+      if (msg.content.length > 10000) {
+        return NextResponse.json(
+          { success: false, error: 'Message too long. Maximum 10,000 characters per message.' },
           { status: 400 }
         );
       }

@@ -1,6 +1,10 @@
 /**
  * @jest-environment node
  */
+jest.mock('@/lib/rateLimit', () => ({
+  checkRateLimit: jest.fn().mockReturnValue({ allowed: true, retryAfterMs: 0 }),
+  getClientIp: jest.fn().mockReturnValue('127.0.0.1'),
+}));
 
 const mockGetDashboardStats = jest.fn();
 

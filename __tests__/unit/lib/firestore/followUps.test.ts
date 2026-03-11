@@ -6,7 +6,12 @@ const mockSet = jest.fn();
 const mockCommit = jest.fn().mockResolvedValue(undefined);
 const mockUpdate = jest.fn().mockResolvedValue(undefined);
 const mockGet = jest.fn();
-const mockWhere = jest.fn().mockReturnThis();
+const mockLimit = jest.fn().mockReturnThis();
+const mockWhere = jest.fn().mockImplementation(() => ({
+  where: mockWhere,
+  limit: mockLimit,
+  get: mockGet,
+}));
 let docIdCounter = 0;
 const mockDoc = jest.fn().mockImplementation((id?: string) => ({
   id: id || `doc-${docIdCounter++}`,

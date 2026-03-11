@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
 import type { CreateLeadRequest } from '@/types/api';
 import type { LeadUrgency } from '@/types/lead';
 
@@ -80,6 +81,17 @@ async function triggerLeadNotifications(params: {
 }
 
 export async function POST(request: NextRequest) {
+  const { allowed } = checkRateLimit('leads', getClientIp(request), {
+    windowMs: 60_000,
+    maxRequests: 5,
+  });
+  if (!allowed) {
+    return NextResponse.json(
+      { success: false, error: 'Too many requests. Please try again shortly.' },
+      { status: 429 }
+    );
+  }
+
   try {
     const body: CreateLeadRequest = await request.json();
 
@@ -110,7 +122,17 @@ export async function POST(request: NextRequest) {
     if (!existingSnapshot.empty) {
       const existingDoc = existingSnapshot.docs[0];
       await existingDoc.ref.update({
-        ...body,
+        name: body.name || null,
+        email: body.email || null,
+        phone: body.phone || null,
+        budgetMin: body.budgetMin || null,
+        budgetMax: body.budgetMax || null,
+        timeline: body.timeline || null,
+        preferredNeighborhoods: body.preferredNeighborhoods || [],
+        propertyTypePreference: body.propertyTypePreference || null,
+        bedroomsMin: body.bedroomsMin || null,
+        conversationTranscript: body.conversationTranscript || [],
+        sessionId: body.sessionId,
         urgency,
         updatedAt: now,
       });

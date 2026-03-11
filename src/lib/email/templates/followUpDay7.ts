@@ -1,4 +1,5 @@
 import type { FollowUpEmailData } from '@/types/email';
+import { escapeHtml } from '@/lib/utils/escapeHtml';
 
 const SITE_URL = process.env.SITE_URL || 'http://localhost:3000';
 
@@ -6,7 +7,7 @@ export function buildFollowUpDay7Email(data: FollowUpEmailData): {
   subject: string;
   html: string;
 } {
-  const name = data.leadName || 'there';
+  const name = escapeHtml(data.leadName || 'there');
   const subject = `Still looking for your Seattle dream home, ${name}?`;
 
   const html = `<!DOCTYPE html>

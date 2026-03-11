@@ -1,24 +1,28 @@
+'use client';
+
+import { useMemo } from 'react';
 import { cn } from '@/lib/utils/cn';
 import { stripMarkers, extractMarkers } from '@/hooks/useChat';
 import { PropertyCard } from '@/components/listings/PropertyCard';
 import { BookingPrompt } from '@/components/booking/BookingPrompt';
-import { seedListings } from '@/data/seedListings';
 import type { ChatMessage as ChatMessageType } from '@/types/chat';
+import type { PropertyListing } from '@/types/listing';
 
 interface ChatMessageProps {
   message: ChatMessageType;
+  listings?: PropertyListing[];
 }
 
-// Build a lookup from seed listings for property card rendering
-const listingsById = new Map(
-  seedListings.map((l, i) => [`featured-${i + 1}`, { ...l, id: `featured-${i + 1}` }])
-);
-
-export function ChatMessage({ message }: ChatMessageProps) {
+export function ChatMessage({ message, listings = [] }: ChatMessageProps) {
   const isUser = message.role === 'user';
   const displayContent = isUser ? message.content : stripMarkers(message.content);
   const suggestedIds = isUser ? [] : extractMarkers(message.content, 'SUGGEST_PROPERTY');
   const bookingIds = isUser ? [] : extractMarkers(message.content, 'BOOK_SHOWING');
+
+  const listingsById = useMemo(
+    () => new Map(listings.map((l) => [l.id, l])),
+    [listings]
+  );
 
   return (
     <div className={cn('flex w-full', isUser ? 'justify-end' : 'justify-start')}>

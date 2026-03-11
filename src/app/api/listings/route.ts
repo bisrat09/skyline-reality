@@ -1,15 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { collection, getDocs, query, where, limit as firestoreLimit } from 'firebase/firestore';
 import type { PropertyListing, ListingStatus, PropertyType } from '@/types/listing';
-
-// Lazy-import db to avoid initialization at module load during tests
-async function getDb() {
-  const { db } = await import('@/lib/firebase/client');
-  return db;
-}
 
 export async function GET(request: NextRequest) {
   try {
+    const { adminDb } = await import('@/lib/firebase/admin');
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status') as ListingStatus | null;
     const neighborhood = searchParams.get('neighborhood');
@@ -20,21 +14,20 @@ export async function GET(request: NextRequest) {
     const featured = searchParams.get('featured');
     const limitParam = searchParams.get('limit');
 
-    const db = await getDb();
-    let q = query(collection(db, 'listings'));
+    let ref: FirebaseFirestore.Query = adminDb.collection('listings');
 
-    if (status) q = query(q, where('status', '==', status));
-    if (neighborhood) q = query(q, where('neighborhood', '==', neighborhood));
-    if (propertyType) q = query(q, where('propertyType', '==', propertyType));
-    if (featured === 'true') q = query(q, where('isFeatured', '==', true));
-    if (limitParam) q = query(q, firestoreLimit(parseInt(limitParam, 10)));
+    if (status) ref = ref.where('status', '==', status);
+    if (neighborhood) ref = ref.where('neighborhood', '==', neighborhood);
+    if (propertyType) ref = ref.where('propertyType', '==', propertyType);
+    if (featured === 'true') ref = ref.where('isFeatured', '==', true);
+    if (limitParam) ref = ref.limit(parseInt(limitParam, 10));
 
-    const snapshot = await getDocs(q);
+    const snapshot = await ref.get();
     let listings = snapshot.docs.map(
       (d) => ({ id: d.id, ...d.data() } as PropertyListing)
     );
 
-    // Client-side range filters
+    // Post-query range filters (Firestore doesn't support range on multiple fields)
     if (minPrice) listings = listings.filter((l) => l.price >= parseInt(minPrice, 10));
     if (maxPrice) listings = listings.filter((l) => l.price <= parseInt(maxPrice, 10));
     if (bedrooms) listings = listings.filter((l) => l.bedrooms >= parseInt(bedrooms, 10));

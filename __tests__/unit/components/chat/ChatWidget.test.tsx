@@ -1,6 +1,11 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ChatWidget } from '@/components/chat/ChatWidget';
 
+// Mock fetch for ChatPanel's listing fetch
+global.fetch = jest.fn().mockResolvedValue({
+  json: () => Promise.resolve({ listings: [] }),
+}) as jest.Mock;
+
 describe('ChatWidget', () => {
   it('renders the floating chat button', () => {
     render(<ChatWidget />);

@@ -1,5 +1,6 @@
 import type { LeadWelcomeData } from '@/types/email';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { escapeHtml } from '@/lib/utils/escapeHtml';
 
 const SITE_URL = process.env.SITE_URL || 'http://localhost:3000';
 
@@ -7,7 +8,7 @@ export function buildLeadWelcomeEmail(data: LeadWelcomeData): {
   subject: string;
   html: string;
 } {
-  const name = data.leadName || 'there';
+  const name = escapeHtml(data.leadName || 'there');
   const subject = `Welcome to Skyline Realty, ${name}!`;
 
   const criteriaItems: string[] = [];
@@ -17,13 +18,13 @@ export function buildLeadWelcomeEmail(data: LeadWelcomeData): {
     criteriaItems.push(`Budget: Up to ${formatCurrency(data.budgetMax)}`);
   }
   if (data.preferredNeighborhoods.length > 0) {
-    criteriaItems.push(`Neighborhoods: ${data.preferredNeighborhoods.join(', ')}`);
+    criteriaItems.push(`Neighborhoods: ${data.preferredNeighborhoods.map(n => escapeHtml(n)).join(', ')}`);
   }
   if (data.bedroomsMin) {
     criteriaItems.push(`Bedrooms: ${data.bedroomsMin}+`);
   }
   if (data.propertyTypePreference) {
-    criteriaItems.push(`Type: ${data.propertyTypePreference.replace('_', ' ')}`);
+    criteriaItems.push(`Type: ${escapeHtml(data.propertyTypePreference.replace('_', ' '))}`);
   }
 
   const criteriaHtml =

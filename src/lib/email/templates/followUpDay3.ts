@@ -1,4 +1,5 @@
 import type { FollowUpEmailData } from '@/types/email';
+import { escapeHtml } from '@/lib/utils/escapeHtml';
 
 const SITE_URL = process.env.SITE_URL || 'http://localhost:3000';
 
@@ -6,14 +7,14 @@ export function buildFollowUpDay3Email(data: FollowUpEmailData): {
   subject: string;
   html: string;
 } {
-  const name = data.leadName || 'there';
-  const primaryNeighborhood = data.preferredNeighborhoods[0] || 'Seattle';
+  const name = escapeHtml(data.leadName || 'there');
+  const primaryNeighborhood = escapeHtml(data.preferredNeighborhoods[0] || 'Seattle');
   const subject = `Seattle market update for ${primaryNeighborhood}`;
 
   const neighborhoodSection =
     data.preferredNeighborhoods.length > 0
       ? `<p style="color:#4B5563;line-height:1.6;">
-          Homes in <strong>${data.preferredNeighborhoods.join(', ')}</strong> are in high demand right now.
+          Homes in <strong>${data.preferredNeighborhoods.map(n => escapeHtml(n)).join(', ')}</strong> are in high demand right now.
           Well-priced properties in these neighborhoods typically receive multiple offers within the first week.
         </p>`
       : `<p style="color:#4B5563;line-height:1.6;">
