@@ -198,7 +198,7 @@ Highlight Seattle-specific features: mountain views, water views, walkability sc
 ```bash
 npm run dev          # Start dev server
 npm run build        # Production build
-npm test             # Run all unit + integration tests (565 tests)
+npm test             # Run all unit + integration tests (589 tests)
 npm run test:coverage # Tests with coverage report
 npm run test:e2e     # Playwright E2E tests
 npm run seed         # Seed Firestore with sample listings
@@ -496,12 +496,58 @@ npm run setup:vapi
 - Voice calls create leads with `source: 'voice_call'` for attribution
 - End-of-call report triggers email notification to agent (same Resend setup as Phase 2)
 
+## Security Hardening — COMPLETE
+
+Full security audit and remediation across all priority levels.
+
+### CRITICAL & HIGH (15 fixed, commit `89d8289`)
+- Firestore security rules (`firestore.rules`) — public read listings, deny all else
+- HTML injection fixed in all 6 email templates via `escapeHtml()`
+- Rate limiting: chat (10/min), leads (5/min), dashboard (10/15min), cron (2/min), listings (30/min)
+- Timing-safe Bearer auth (`timingSafeEqual`) on all 5 protected routes
+- Vapi webhook fail-secure (deny on missing secret)
+- Field allowlist in leads API (only accepted fields stored)
+- Role validation (`user`/`assistant` only) + message limits (50 max, 10K chars) in chat API
+- Client SDK writes removed from `leads.ts` (now read-only)
+- Stale closure fixed in `useChat.ts`
+- Batch limit (50) on `getPendingFollowUps`
+- Listings API switched to admin SDK
+
+### MEDIUM (8 of 9 fixed, commit `a89be79`)
+- Security headers in `next.config.mjs`: CSP, HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy
+- `poweredByHeader: false`
+- Dashboard auth: `useDashboardAuth.login()` now async, validates server-side before storing
+- Rate limiter: `pruneExpired()` cleanup + rightmost `x-forwarded-for` IP (not spoofable leftmost)
+- Numeric param validation in listings API (limit 1-100)
+- Cron endpoint rate limited (2/min)
+- Error logging sanitized — `error.message` only, no full objects
+
+### LOW (all 7 fixed)
+- Email validation: `isValidEmail()` check before Resend send in `leadNotification.ts` + leads route
+- sessionId validation: max 128 chars, string type check in chat + leads routes
+- Listings rate limiting: 30 req/min
+- Dashboard query param validation: status, urgency, date, page, limit validated against allowed values
+- Unsubscribe link: mailto unsubscribe footer in all 4 lead-facing email templates
+- SITE_URL default: changed from `localhost:3000` to `https://skyline-reality.vercel.app` in all 5 templates
+- Transcript size limit: capped at 100 messages in leads route
+
+### Deferred
+- Dependency vulnerabilities: `npm audit` fixes require breaking major upgrades (Next 14→16). Monitor for patch-level fixes.
+- Firestore rules deploy: rules created, run `firebase deploy --only firestore:rules`
+
+### Key Breaking Change
+- `LoginForm.onLogin` prop: `(password: string) => void` → `(password: string) => Promise<boolean>`
+- `useDashboardAuth().login()` is now async, returns `Promise<boolean>`
+
+### Tests
+- **589 tests passing** across 74 test files (24 new tests for security fixes)
+
 ## Commands
 
 ```bash
 npm run dev          # Start dev server
 npm run build        # Production build
-npm test             # Run all unit + integration tests (565 tests)
+npm test             # Run all unit + integration tests (589 tests)
 npm run test:coverage # Tests with coverage report
 npm run test:e2e     # Playwright E2E tests
 npm run seed         # Seed Firestore with sample listings

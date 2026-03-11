@@ -1,35 +1,24 @@
 # Active Tasks
 
-## Current: Security Hardening — MEDIUM & LOW Priority Fixes
+## Deferred
 
-### MEDIUM Priority — 8 of 9 FIXED (see #4 below)
-
-- [x] **1. Security headers** — CSP, X-Frame-Options, HSTS, X-Content-Type-Options, Referrer-Policy added to `next.config.mjs`
-- [x] **2. Disable X-Powered-By** — `poweredByHeader: false` in `next.config.mjs`
-- [x] **3. Dashboard auth** — Server-side validation before storing auth state (`useDashboardAuth.ts`)
 - [ ] **4. Dependency vulnerabilities** — `npm audit`: all fixes require breaking major upgrades (Next 14→16, firebase-admin downgrade). Monitor for patch-level fixes.
-- [x] **5. Rate limiter cleanup** — Added `pruneExpired()` to prevent memory leaks (`rateLimit.ts`)
-- [x] **6. IP spoofing** — Now prefers `x-real-ip`, falls back to rightmost `x-forwarded-for` (`rateLimit.ts`)
-- [x] **7. Numeric param validation** — limit (1-100), price, bedrooms validated in `listings/route.ts`
-- [x] **8. Cron rate limiting** — 2 req/min limit added to `cron/follow-ups/route.ts`
-- [x] **9. Error logging** — All API routes now log `error.message` only, not full objects
-
-### LOW Priority
-
-- [ ] **10. Email validation** — No email format validation before sending via Resend (`leadNotification.ts`)
-- [ ] **11. sessionId validation** — No length/format validation (`chat/route.ts`, `leads/route.ts`)
-- [ ] **12. Listings rate limiting** — Listings API has no rate limiting (`listings/route.ts`)
-- [ ] **13. Query param validation** — Dashboard status/urgency params not validated (`dashboard/leads/route.ts`)
-- [ ] **14. Unsubscribe link** — No unsubscribe in follow-up emails; CAN-SPAM compliance (email templates)
-- [ ] **15. SITE_URL default** — Defaults to `http://localhost:3000` in email templates
-- [ ] **16. Transcript size limit** — `conversationTranscript` stored without size limits (`leads/route.ts`)
-- [ ] **17. Firestore rules deploy** — Rules created but may not be deployed yet
+- [ ] **17. Firestore rules deploy** — Rules created, run `firebase deploy --only firestore:rules` when ready
 
 ---
 
 ## Completed
 
-### Security Hardening — MEDIUM Priority (committed latest)
+### Security Hardening — LOW Priority (all 8 fixed)
+- [x] **10. Email validation** — `isValidEmail()` check before Resend send in `leadNotification.ts` + leads route
+- [x] **11. sessionId validation** — Max 128 chars, string type check in `chat/route.ts` + `leads/route.ts`
+- [x] **12. Listings rate limiting** — 30 req/min rate limit added to `listings/route.ts`
+- [x] **13. Query param validation** — Status, urgency, date, page, limit validated in `dashboard/leads/route.ts`
+- [x] **14. Unsubscribe link** — mailto unsubscribe footer added to all 4 lead-facing email templates
+- [x] **15. SITE_URL default** — Changed from `localhost:3000` to `https://skyline-reality.vercel.app` in all 5 templates
+- [x] **16. Transcript size limit** — Capped at 100 messages in `leads/route.ts`
+
+### Security Hardening — MEDIUM Priority (8 of 9, committed `a89be79`)
 - [x] Security headers (CSP, HSTS, X-Frame-Options, etc.)
 - [x] X-Powered-By disabled
 - [x] Dashboard auth server-side validation

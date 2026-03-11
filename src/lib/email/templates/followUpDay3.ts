@@ -1,7 +1,7 @@
 import type { FollowUpEmailData } from '@/types/email';
 import { escapeHtml } from '@/lib/utils/escapeHtml';
 
-const SITE_URL = process.env.SITE_URL || 'http://localhost:3000';
+const SITE_URL = process.env.SITE_URL || 'https://skyline-reality.vercel.app';
 
 export function buildFollowUpDay3Email(data: FollowUpEmailData): {
   subject: string;
@@ -54,6 +54,10 @@ export function buildFollowUpDay3Email(data: FollowUpEmailData): {
   <div style="padding:16px;text-align:center;">
     <p style="color:#9CA3AF;font-size:12px;margin:0;">
       Skyline Realty &middot; Seattle, WA
+    </p>
+    <p style="color:#9CA3AF;font-size:11px;margin:8px 0 0;">
+      You received this email because you chatted with Skyline Realty.
+      <a href="mailto:${process.env.AGENT_EMAIL || 'support@skylinerealty.com'}?subject=Unsubscribe&body=Please%20remove%20me%20from%20future%20emails." style="color:#9CA3AF;">Unsubscribe</a>
     </p>
   </div>
 </div>

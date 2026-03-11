@@ -49,7 +49,7 @@ export function buildVoiceCallSummaryEmail(data: VoiceCallSummaryData): {
           ? `From ${formatCurrency(data.budgetMin)}`
           : 'Not specified';
 
-  const siteUrl = process.env.SITE_URL || 'http://localhost:3000';
+  const siteUrl = process.env.SITE_URL || 'https://skyline-reality.vercel.app';
   const transcriptExcerpt = data.transcript.substring(0, 1000);
   const truncated = data.transcript.length > 1000;
 

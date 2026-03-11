@@ -20,26 +20,57 @@ export async function GET(request: NextRequest) {
   try {
     const { getAllLeads } = await import('@/lib/firestore/dashboardLeads');
 
+    const VALID_STATUSES: LeadStatus[] = ['new', 'contacted', 'showing_booked', 'closed'];
+    const VALID_URGENCIES: LeadUrgency[] = ['hot', 'warm', 'cold'];
+
     const url = new URL(request.url);
     const params: LeadsQueryParams = {};
 
     const status = url.searchParams.get('status');
-    if (status) params.status = status as LeadStatus;
+    if (status) {
+      if (!VALID_STATUSES.includes(status as LeadStatus)) {
+        return NextResponse.json({ error: 'Invalid status filter' }, { status: 400 });
+      }
+      params.status = status as LeadStatus;
+    }
 
     const urgency = url.searchParams.get('urgency');
-    if (urgency) params.urgency = urgency as LeadUrgency;
+    if (urgency) {
+      if (!VALID_URGENCIES.includes(urgency as LeadUrgency)) {
+        return NextResponse.json({ error: 'Invalid urgency filter' }, { status: 400 });
+      }
+      params.urgency = urgency as LeadUrgency;
+    }
 
     const startDate = url.searchParams.get('startDate');
+    if (startDate && isNaN(Date.parse(startDate))) {
+      return NextResponse.json({ error: 'Invalid startDate format' }, { status: 400 });
+    }
     if (startDate) params.startDate = startDate;
 
     const endDate = url.searchParams.get('endDate');
+    if (endDate && isNaN(Date.parse(endDate))) {
+      return NextResponse.json({ error: 'Invalid endDate format' }, { status: 400 });
+    }
     if (endDate) params.endDate = endDate;
 
     const page = url.searchParams.get('page');
-    if (page) params.page = parseInt(page, 10);
+    if (page) {
+      const p = parseInt(page, 10);
+      if (isNaN(p) || p < 1) {
+        return NextResponse.json({ error: 'Invalid page number' }, { status: 400 });
+      }
+      params.page = p;
+    }
 
     const limit = url.searchParams.get('limit');
-    if (limit) params.limit = parseInt(limit, 10);
+    if (limit) {
+      const l = parseInt(limit, 10);
+      if (isNaN(l) || l < 1 || l > 100) {
+        return NextResponse.json({ error: 'Invalid limit (must be 1-100)' }, { status: 400 });
+      }
+      params.limit = l;
+    }
 
     const result = await getAllLeads(params);
 

@@ -4,6 +4,7 @@ import type { ChatMessage } from '@/types/chat';
 import { sendEmail } from './sendEmail';
 import { buildAgentNotificationEmail } from './templates/agentNotification';
 import { buildLeadWelcomeEmail } from './templates/leadWelcome';
+import { isValidEmail } from '@/lib/utils/validators';
 
 interface NotifyNewLeadParams {
   leadId: string;
@@ -55,7 +56,7 @@ export async function notifyNewLead(params: NotifyNewLeadParams): Promise<{
   const promises: Promise<void>[] = [];
 
   // 1. Agent notification
-  if (agentEmail) {
+  if (agentEmail && isValidEmail(agentEmail)) {
     const notificationData: AgentNotificationData = {
       leadName: params.name,
       leadEmail: params.email,
@@ -79,7 +80,7 @@ export async function notifyNewLead(params: NotifyNewLeadParams): Promise<{
   }
 
   // 2. Lead welcome email
-  if (params.email) {
+  if (params.email && isValidEmail(params.email)) {
     const welcomeData: LeadWelcomeData = {
       leadName: params.name,
       preferredNeighborhoods: params.preferredNeighborhoods,

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
 import type { PropertyListing, ListingStatus, PropertyType } from '@/types/listing';
 
 function parsePositiveInt(value: string | null, max?: number): number | null {
@@ -10,6 +11,17 @@ function parsePositiveInt(value: string | null, max?: number): number | null {
 }
 
 export async function GET(request: NextRequest) {
+  const { allowed } = checkRateLimit('listings', getClientIp(request), {
+    windowMs: 60_000,
+    maxRequests: 30,
+  });
+  if (!allowed) {
+    return NextResponse.json(
+      { success: false, error: 'Too many requests. Please try again shortly.' },
+      { status: 429 }
+    );
+  }
+
   try {
     const { adminDb } = await import('@/lib/firebase/admin');
     const { searchParams } = new URL(request.url);

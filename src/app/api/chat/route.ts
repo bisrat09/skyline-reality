@@ -31,9 +31,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!body.sessionId) {
+    if (!body.sessionId || typeof body.sessionId !== 'string' || body.sessionId.length > 128) {
       return NextResponse.json(
-        { success: false, error: 'sessionId is required' },
+        { success: false, error: 'sessionId is required and must be a string (max 128 chars)' },
         { status: 400 }
       );
     }

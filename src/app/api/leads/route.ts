@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
 import type { CreateLeadRequest } from '@/types/api';
 import type { LeadUrgency } from '@/types/lead';
+import { isValidEmail } from '@/lib/utils/validators';
 
 function calculateUrgency(lead: Partial<CreateLeadRequest>): LeadUrgency {
   let score = 0;
@@ -95,9 +96,9 @@ export async function POST(request: NextRequest) {
   try {
     const body: CreateLeadRequest = await request.json();
 
-    if (!body.sessionId) {
+    if (!body.sessionId || typeof body.sessionId !== 'string' || body.sessionId.length > 128) {
       return NextResponse.json(
-        { success: false, error: 'sessionId is required' },
+        { success: false, error: 'sessionId is required and must be a string (max 128 chars)' },
         { status: 400 }
       );
     }
@@ -107,6 +108,18 @@ export async function POST(request: NextRequest) {
         { success: false, error: 'At least one contact method (email or phone) is required' },
         { status: 400 }
       );
+    }
+
+    if (body.email && !isValidEmail(body.email)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid email format' },
+        { status: 400 }
+      );
+    }
+
+    // Cap transcript to last 100 messages to prevent unbounded storage
+    if (body.conversationTranscript && body.conversationTranscript.length > 100) {
+      body.conversationTranscript = body.conversationTranscript.slice(-100);
     }
 
     const { adminDb } = await import('@/lib/firebase/admin');
