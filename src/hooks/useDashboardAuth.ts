@@ -7,7 +7,7 @@ const STORAGE_KEY = 'dashboard_auth';
 interface UseDashboardAuthReturn {
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (password: string) => void;
+  login: (password: string) => Promise<boolean>;
   logout: () => void;
   getAuthHeaders: () => Record<string, string>;
   handleUnauthorized: () => void;
@@ -25,9 +25,21 @@ export function useDashboardAuth(): UseDashboardAuthReturn {
     setIsLoading(false);
   }, []);
 
-  const login = useCallback((password: string) => {
-    sessionStorage.setItem(STORAGE_KEY, password);
-    setIsAuthenticated(true);
+  const login = useCallback(async (password: string): Promise<boolean> => {
+    // Validate server-side before storing
+    try {
+      const res = await fetch('/api/dashboard/stats', {
+        headers: { Authorization: `Bearer ${password}` },
+      });
+      if (res.ok) {
+        sessionStorage.setItem(STORAGE_KEY, password);
+        setIsAuthenticated(true);
+        return true;
+      }
+      return false;
+    } catch {
+      return false;
+    }
   }, []);
 
   const logout = useCallback(() => {

@@ -12,6 +12,16 @@ export interface RateLimitConfig {
 
 const stores = new Map<string, Map<string, RateLimitEntry>>();
 
+/** Prune expired entries from a store to prevent memory leaks. */
+function pruneExpired(store: Map<string, RateLimitEntry>): void {
+  const now = Date.now();
+  store.forEach((entry, key) => {
+    if (now > entry.resetAt) {
+      store.delete(key);
+    }
+  });
+}
+
 export function checkRateLimit(
   storeName: string,
   key: string,
@@ -19,6 +29,11 @@ export function checkRateLimit(
 ): { allowed: boolean; retryAfterMs: number } {
   if (!stores.has(storeName)) stores.set(storeName, new Map());
   const store = stores.get(storeName)!;
+
+  // Periodically prune expired entries (every 100 checks)
+  if (store.size > 100) {
+    pruneExpired(store);
+  }
 
   const now = Date.now();
   const entry = store.get(key);
@@ -36,12 +51,25 @@ export function checkRateLimit(
   return { allowed: true, retryAfterMs: 0 };
 }
 
+/**
+ * Extract client IP from request headers.
+ * On Vercel, x-real-ip is set by the infrastructure and is trustworthy.
+ * For x-forwarded-for, use the rightmost IP (appended by infrastructure),
+ * not the leftmost (which the client controls).
+ */
 export function getClientIp(request: NextRequest): string {
-  return (
-    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    request.headers.get('x-real-ip') ||
-    'unknown'
-  );
+  // Prefer x-real-ip — set by Vercel/infrastructure, not spoofable
+  const realIp = request.headers.get('x-real-ip');
+  if (realIp) return realIp.trim();
+
+  // Fallback: rightmost x-forwarded-for entry (added by infrastructure)
+  const forwarded = request.headers.get('x-forwarded-for');
+  if (forwarded) {
+    const ips = forwarded.split(',').map((ip) => ip.trim());
+    return ips[ips.length - 1];
+  }
+
+  return 'unknown';
 }
 
 /** Reset a rate limit store (for testing). */

@@ -14,7 +14,7 @@ describe('LoginForm', () => {
   });
 
   it('calls onLogin with password on submit', () => {
-    const handleLogin = jest.fn();
+    const handleLogin = jest.fn().mockResolvedValue(true);
     render(<LoginForm onLogin={handleLogin} />);
     fireEvent.change(screen.getByLabelText('Password'), {
       target: { value: 'my-pass' },
@@ -24,7 +24,7 @@ describe('LoginForm', () => {
   });
 
   it('does not call onLogin with empty password', () => {
-    const handleLogin = jest.fn();
+    const handleLogin = jest.fn().mockResolvedValue(false);
     render(<LoginForm onLogin={handleLogin} />);
     fireEvent.click(screen.getByRole('button', { name: 'Sign In' }));
     expect(handleLogin).not.toHaveBeenCalled();

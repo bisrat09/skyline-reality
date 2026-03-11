@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
       limit: params.limit || 20,
     });
   } catch (error) {
-    console.error('Dashboard leads error:', error);
+    console.error('Dashboard leads error:', error instanceof Error ? error.message : 'Unknown error');
     return NextResponse.json(
       { error: 'Failed to fetch leads' },
       { status: 500 }

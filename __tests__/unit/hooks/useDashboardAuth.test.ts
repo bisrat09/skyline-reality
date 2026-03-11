@@ -3,6 +3,10 @@ import { useDashboardAuth } from '@/hooks/useDashboardAuth';
 
 const mockStorage: Record<string, string> = {};
 
+// Mock fetch for server-side validation
+const mockFetch = jest.fn();
+global.fetch = mockFetch;
+
 beforeEach(() => {
   Object.keys(mockStorage).forEach((key) => delete mockStorage[key]);
   jest.spyOn(Storage.prototype, 'getItem').mockImplementation(
@@ -18,6 +22,7 @@ beforeEach(() => {
       delete mockStorage[key];
     }
   );
+  mockFetch.mockReset();
 });
 
 afterEach(() => {
@@ -36,13 +41,42 @@ describe('useDashboardAuth', () => {
     expect(result.current.isAuthenticated).toBe(true);
   });
 
-  it('login stores password and sets authenticated', () => {
+  it('login validates server-side and stores password on success', async () => {
+    mockFetch.mockResolvedValue({ ok: true });
     const { result } = renderHook(() => useDashboardAuth());
-    act(() => {
-      result.current.login('my-pass');
+    let success: boolean = false;
+    await act(async () => {
+      success = await result.current.login('my-pass');
     });
+    expect(success).toBe(true);
     expect(result.current.isAuthenticated).toBe(true);
     expect(mockStorage['dashboard_auth']).toBe('my-pass');
+    expect(mockFetch).toHaveBeenCalledWith('/api/dashboard/stats', {
+      headers: { Authorization: 'Bearer my-pass' },
+    });
+  });
+
+  it('login returns false on invalid password', async () => {
+    mockFetch.mockResolvedValue({ ok: false });
+    const { result } = renderHook(() => useDashboardAuth());
+    let success: boolean = true;
+    await act(async () => {
+      success = await result.current.login('wrong-pass');
+    });
+    expect(success).toBe(false);
+    expect(result.current.isAuthenticated).toBe(false);
+    expect(mockStorage['dashboard_auth']).toBeUndefined();
+  });
+
+  it('login returns false on network error', async () => {
+    mockFetch.mockRejectedValue(new Error('Network error'));
+    const { result } = renderHook(() => useDashboardAuth());
+    let success: boolean = true;
+    await act(async () => {
+      success = await result.current.login('my-pass');
+    });
+    expect(success).toBe(false);
+    expect(result.current.isAuthenticated).toBe(false);
   });
 
   it('logout clears session', () => {

@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
           controller.enqueue(encoder.encode(`data: ${stopData}\n\n`));
           controller.close();
         } catch (error) {
-          console.error('Stream error:', error);
+          console.error('Stream error:', error instanceof Error ? error.message : 'Unknown error');
           const errorData = JSON.stringify({
             type: 'error',
             error: 'Stream interrupted',
@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Chat API error:', error);
+    console.error('Chat API error:', error instanceof Error ? error.message : 'Unknown error');
     return NextResponse.json(
       { success: false, error: 'Failed to process chat request' },
       { status: 500 }

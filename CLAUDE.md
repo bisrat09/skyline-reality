@@ -1,5 +1,11 @@
 # Skyline Realty AI Demo
 
+## Working Protocol
+- Always read TASKS.md before starting work
+- Update TASKS.md after every completed item
+- If TASKS.md has pending items, continue those first
+- Never re-scan if a scan's results are already in TASKS.md
+
 ## Project Overview
 
 This is a demo/portfolio project showcasing an AI-powered lead capture and follow-up system for real estate agencies. The goal is to use this demo to sell AI consulting services to real estate agents at $2,500-4,000 per implementation, with $500-1,000/month retainers.

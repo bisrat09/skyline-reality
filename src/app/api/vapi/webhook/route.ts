@@ -51,11 +51,11 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ received: true }, { status: 200 });
 
       default:
-        console.warn('[Vapi Webhook] Unknown event type:', (event as { type: string }).type);
+        // Silently accept unknown event types
         return NextResponse.json({ received: true }, { status: 200 });
     }
   } catch (error) {
-    console.error('[Vapi Webhook] Error:', error);
+    console.error('[Vapi Webhook] Error:', error instanceof Error ? error.message : 'Unknown error');
     return NextResponse.json(
       { error: 'Webhook processing failed' },
       { status: 500 }

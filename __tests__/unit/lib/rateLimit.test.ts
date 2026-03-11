@@ -59,11 +59,18 @@ describe('checkRateLimit', () => {
 });
 
 describe('getClientIp', () => {
-  it('extracts IP from x-forwarded-for', () => {
+  it('prefers x-real-ip over x-forwarded-for', () => {
+    const req = new NextRequest('http://localhost', {
+      headers: { 'x-real-ip': '9.8.7.6', 'x-forwarded-for': '1.2.3.4, 5.6.7.8' },
+    });
+    expect(getClientIp(req)).toBe('9.8.7.6');
+  });
+
+  it('uses rightmost x-forwarded-for IP (infrastructure-appended)', () => {
     const req = new NextRequest('http://localhost', {
       headers: { 'x-forwarded-for': '1.2.3.4, 5.6.7.8' },
     });
-    expect(getClientIp(req)).toBe('1.2.3.4');
+    expect(getClientIp(req)).toBe('5.6.7.8');
   });
 
   it('falls back to x-real-ip', () => {

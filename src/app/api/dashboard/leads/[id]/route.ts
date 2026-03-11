@@ -45,7 +45,7 @@ export async function PATCH(
     if (error instanceof Error && error.message.includes('not found')) {
       return NextResponse.json({ error: error.message }, { status: 404 });
     }
-    console.error('Dashboard update lead error:', error);
+    console.error('Dashboard update lead error:', error instanceof Error ? error.message : 'Unknown error');
     return NextResponse.json(
       { error: 'Failed to update lead status' },
       { status: 500 }

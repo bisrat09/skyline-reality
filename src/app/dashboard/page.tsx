@@ -20,9 +20,13 @@ export default function DashboardPage() {
   const auth = useDashboardAuth();
   const [authError, setAuthError] = useState<string | null>(null);
 
-  const handleLogin = (password: string) => {
+  const handleLogin = async (password: string): Promise<boolean> => {
     setAuthError(null);
-    auth.login(password);
+    const success = await auth.login(password);
+    if (!success) {
+      setAuthError('Invalid password');
+    }
+    return success;
   };
 
   if (auth.isLoading) {

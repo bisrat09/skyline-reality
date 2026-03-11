@@ -1,7 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticateBearer } from '@/lib/auth';
+import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
 
 export async function GET(request: NextRequest) {
+  const { allowed } = checkRateLimit('cron', getClientIp(request), {
+    windowMs: 60_000,
+    maxRequests: 2,
+  });
+  if (!allowed) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+  }
+
   if (!authenticateBearer(request, 'CRON_SECRET')) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -99,7 +108,7 @@ export async function GET(request: NextRequest) {
       failed,
     });
   } catch (error) {
-    console.error('Cron follow-ups error:', error);
+    console.error('Cron follow-ups error:', error instanceof Error ? error.message : 'Unknown error');
     return NextResponse.json(
       { success: false, error: 'Failed to process follow-ups' },
       { status: 500 }

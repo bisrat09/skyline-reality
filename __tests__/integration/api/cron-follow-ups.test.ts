@@ -42,6 +42,7 @@ jest.mock('@/lib/firebase/admin', () => ({
 
 import { GET } from '@/app/api/cron/follow-ups/route';
 import { NextRequest } from 'next/server';
+import { resetStore } from '@/lib/rateLimit';
 
 function createRequest(headers: Record<string, string> = {}) {
   return new NextRequest('http://localhost:3000/api/cron/follow-ups', {
@@ -52,6 +53,7 @@ function createRequest(headers: Record<string, string> = {}) {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  resetStore('cron');
   process.env.CRON_SECRET = 'test-secret';
   mockLeadGet.mockResolvedValue({
     exists: true,

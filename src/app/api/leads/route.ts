@@ -57,7 +57,7 @@ async function triggerLeadNotifications(params: {
       welcomeEmailSent: results.leadWelcome.success,
     });
   } catch (err) {
-    console.error('Instant email error:', err);
+    console.error('Instant email error:', err instanceof Error ? err.message : 'Unknown error');
   }
 
   // Schedule follow-up sequence (Day 1, 3, 7)
@@ -76,7 +76,7 @@ async function triggerLeadNotifications(params: {
       });
     }
   } catch (err) {
-    console.error('Follow-up scheduling error:', err);
+    console.error('Follow-up scheduling error:', err instanceof Error ? err.message : 'Unknown error');
   }
 }
 
@@ -172,14 +172,14 @@ export async function POST(request: NextRequest) {
       body,
       urgency,
       now,
-    }).catch((err) => console.error('Lead notification error:', err));
+    }).catch((err) => console.error('Lead notification error:', err instanceof Error ? err.message : 'Unknown error'));
 
     return NextResponse.json(
       { success: true, leadId: docRef.id, isNewLead: true },
       { status: 201 }
     );
   } catch (error) {
-    console.error('Leads API error:', error);
+    console.error('Leads API error:', error instanceof Error ? error.message : 'Unknown error');
     return NextResponse.json(
       { success: false, error: 'Failed to create lead' },
       { status: 500 }

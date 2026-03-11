@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ calls, total: calls.length });
   } catch (error) {
-    console.error('Dashboard voice calls error:', error);
+    console.error('Dashboard voice calls error:', error instanceof Error ? error.message : 'Unknown error');
     return NextResponse.json(
       { error: 'Failed to fetch voice calls' },
       { status: 500 }
