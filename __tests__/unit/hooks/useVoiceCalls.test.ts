@@ -46,4 +46,22 @@ describe('useVoiceCalls', () => {
     expect(result.current.error).toBe('Network error');
     expect(result.current.isLoading).toBe(false);
   });
+
+  it('calls onUnauthorized on 401 instead of setting error', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 401,
+    });
+
+    const onUnauthorized = jest.fn();
+    const { result } = renderHook(() => useVoiceCalls({ onUnauthorized }));
+
+    await act(async () => {
+      await result.current.fetchCalls({ Authorization: 'Bearer expired' });
+    });
+
+    expect(onUnauthorized).toHaveBeenCalledTimes(1);
+    // Error should NOT be set — the page will re-render to login
+    expect(result.current.error).toBeNull();
+  });
 });

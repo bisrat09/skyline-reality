@@ -28,6 +28,21 @@ interface UseLeadCaptureReturn {
   processAndSubmit: (messages: ChatMessage[]) => Promise<void>;
 }
 
+/** Serialize fields to a stable string for comparison */
+function fieldFingerprint(fields: ExtractedLeadFields): string {
+  return JSON.stringify({
+    name: fields.name || '',
+    email: fields.email || '',
+    phone: fields.phone || '',
+    budgetMin: fields.budgetMin || 0,
+    budgetMax: fields.budgetMax || 0,
+    timeline: fields.timeline || '',
+    bedrooms: fields.bedrooms || 0,
+    propertyType: fields.propertyType || '',
+    neighborhoods: (fields.neighborhoods || []).slice().sort().join(','),
+  });
+}
+
 export function useLeadCapture({
   sessionId,
   threshold = 2,
@@ -35,7 +50,8 @@ export function useLeadCapture({
   const [capturedFields, setCapturedFields] = useState<ExtractedLeadFields>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const submittedRef = useRef(false);
+  /** Fingerprint of the last successfully submitted fields */
+  const lastSubmittedFingerprintRef = useRef<string | null>(null);
 
   const extractFromMessage = useCallback(
     (content: string): ExtractedLeadFields => {
@@ -49,7 +65,7 @@ export function useLeadCapture({
 
   const processAndSubmit = useCallback(
     async (messages: ChatMessage[]) => {
-      if (submittedRef.current || isSubmitting) return;
+      if (isSubmitting) return;
 
       // Re-extract from all user messages to get full picture
       let accumulated: ExtractedLeadFields = {};
@@ -63,7 +79,10 @@ export function useLeadCapture({
 
       if (!hasReachedThreshold(accumulated, threshold)) return;
 
-      submittedRef.current = true;
+      // Skip if fields haven't changed since last successful submit
+      const currentFingerprint = fieldFingerprint(accumulated);
+      if (lastSubmittedFingerprintRef.current === currentFingerprint) return;
+
       setIsSubmitting(true);
 
       try {
@@ -86,13 +105,11 @@ export function useLeadCapture({
         });
 
         if (response.ok) {
+          lastSubmittedFingerprintRef.current = currentFingerprint;
           setIsSubmitted(true);
-        } else {
-          // Allow retry
-          submittedRef.current = false;
         }
       } catch {
-        submittedRef.current = false;
+        // Network error — allow retry on next call
       } finally {
         setIsSubmitting(false);
       }

@@ -3,6 +3,10 @@
 import { useState, useCallback } from 'react';
 import type { VoiceCall } from '@/types/voice';
 
+interface UseVoiceCallsOptions {
+  onUnauthorized?: () => void;
+}
+
 interface UseVoiceCallsReturn {
   calls: Array<VoiceCall & { id: string }>;
   isLoading: boolean;
@@ -10,7 +14,7 @@ interface UseVoiceCallsReturn {
   fetchCalls: (authHeaders: Record<string, string>) => Promise<void>;
 }
 
-export function useVoiceCalls(): UseVoiceCallsReturn {
+export function useVoiceCalls(options?: UseVoiceCallsOptions): UseVoiceCallsReturn {
   const [calls, setCalls] = useState<Array<VoiceCall & { id: string }>>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -27,7 +31,7 @@ export function useVoiceCalls(): UseVoiceCallsReturn {
 
         if (!res.ok) {
           if (res.status === 401) {
-            setError('Unauthorized');
+            options?.onUnauthorized?.();
             return;
           }
           throw new Error(`Failed to fetch voice calls: ${res.status}`);
@@ -41,7 +45,7 @@ export function useVoiceCalls(): UseVoiceCallsReturn {
         setIsLoading(false);
       }
     },
-    []
+    [options]
   );
 
   return { calls, isLoading, error, fetchCalls };

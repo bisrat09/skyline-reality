@@ -10,9 +10,16 @@ import { LeadFilters } from '@/components/dashboard/LeadFilters';
 import { LeadTable } from '@/components/dashboard/LeadTable';
 import { VoiceCallTable } from '@/components/dashboard/VoiceCallTable';
 import { useDashboardAuth } from '@/hooks/useDashboardAuth';
+import type { LoginError } from '@/hooks/useDashboardAuth';
 import { useDashboard } from '@/hooks/useDashboard';
 import { useVoiceCalls } from '@/hooks/useVoiceCalls';
 import { cn } from '@/lib/utils/cn';
+
+const LOGIN_ERROR_MESSAGES: Record<NonNullable<LoginError>, string> = {
+  invalid_password: 'Invalid password',
+  rate_limited: 'Too many login attempts. Please try again later.',
+  network_error: 'Unable to connect. Please check your network and try again.',
+};
 
 type DashboardTab = 'leads' | 'voice-calls';
 
@@ -22,11 +29,11 @@ export default function DashboardPage() {
 
   const handleLogin = async (password: string): Promise<boolean> => {
     setAuthError(null);
-    const success = await auth.login(password);
-    if (!success) {
-      setAuthError('Invalid password');
+    const result = await auth.login(password);
+    if (!result.success && result.error) {
+      setAuthError(LOGIN_ERROR_MESSAGES[result.error]);
     }
-    return success;
+    return result.success;
   };
 
   if (auth.isLoading) {
@@ -57,7 +64,9 @@ function DashboardContent({
     onUnauthorized: auth.handleUnauthorized,
   });
 
-  const voiceCalls = useVoiceCalls();
+  const voiceCalls = useVoiceCalls({
+    onUnauthorized: auth.handleUnauthorized,
+  });
 
   useEffect(() => {
     if (activeTab === 'voice-calls') {

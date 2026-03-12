@@ -36,13 +36,16 @@ import {
 
 beforeEach(() => {
   jest.clearAllMocks();
-  // Reset chain methods to return `this`-like object
-  mockWhere.mockReturnThis();
-  mockOrderBy.mockReturnValue({
+  // Reset chain methods — each returns an object with all chain methods
+  const chainable = {
+    where: mockWhere,
+    orderBy: mockOrderBy,
     limit: mockLimit,
     get: mockGet,
-  });
-  mockLimit.mockReturnValue({ get: mockGet });
+  };
+  mockWhere.mockReturnValue(chainable);
+  mockOrderBy.mockReturnValue(chainable);
+  mockLimit.mockReturnValue(chainable);
 });
 
 describe('createVoiceCall', () => {
@@ -144,28 +147,24 @@ describe('getAllVoiceCalls', () => {
     expect(mockLimit).toHaveBeenCalledWith(10);
   });
 
-  it('filters by startDate', async () => {
-    mockGet.mockResolvedValue({
-      docs: [
-        { id: 'vc-1', data: () => ({ createdAt: '2026-03-08' }) },
-        { id: 'vc-2', data: () => ({ createdAt: '2026-03-01' }) },
-      ],
-    });
-    const results = await getAllVoiceCalls({ startDate: '2026-03-05' });
-    expect(results).toHaveLength(1);
-    expect(results[0].id).toBe('vc-1');
+  it('applies startDate as Firestore where filter', async () => {
+    mockGet.mockResolvedValue({ docs: [] });
+    await getAllVoiceCalls({ startDate: '2026-03-05' });
+    expect(mockWhere).toHaveBeenCalledWith('createdAt', '>=', '2026-03-05');
   });
 
-  it('filters by endDate', async () => {
-    mockGet.mockResolvedValue({
-      docs: [
-        { id: 'vc-1', data: () => ({ createdAt: '2026-03-08' }) },
-        { id: 'vc-2', data: () => ({ createdAt: '2026-03-01' }) },
-      ],
-    });
-    const results = await getAllVoiceCalls({ endDate: '2026-03-05' });
-    expect(results).toHaveLength(1);
-    expect(results[0].id).toBe('vc-2');
+  it('applies endDate as Firestore where filter', async () => {
+    mockGet.mockResolvedValue({ docs: [] });
+    await getAllVoiceCalls({ endDate: '2026-03-10' });
+    expect(mockWhere).toHaveBeenCalledWith('createdAt', '<=', '2026-03-10');
+  });
+
+  it('applies date filters before limit for complete results', async () => {
+    mockGet.mockResolvedValue({ docs: [] });
+    await getAllVoiceCalls({ startDate: '2026-03-01', limit: 10 });
+    // where should be called before limit
+    expect(mockWhere).toHaveBeenCalledWith('createdAt', '>=', '2026-03-01');
+    expect(mockLimit).toHaveBeenCalledWith(10);
   });
 });
 

@@ -107,4 +107,22 @@ describe('handleEndOfCall', () => {
       })
     );
   });
+
+  it('skips lead creation when existing call already has a leadId (idempotent)', async () => {
+    mockGetByVapiId.mockResolvedValue({ id: 'vc-1', leadId: 'lead-existing' });
+    await handleEndOfCall(baseEvent);
+    // Voice call should still be updated with latest transcript
+    expect(mockUpdate).toHaveBeenCalledWith(
+      'vc-1',
+      expect.objectContaining({ transcript: baseEvent.transcript })
+    );
+    // But no duplicate lead should be created
+    expect(mockCreateLead).not.toHaveBeenCalled();
+  });
+
+  it('creates lead when existing call has no leadId', async () => {
+    mockGetByVapiId.mockResolvedValue({ id: 'vc-1', leadId: null });
+    await handleEndOfCall(baseEvent);
+    expect(mockCreateLead).toHaveBeenCalledTimes(1);
+  });
 });

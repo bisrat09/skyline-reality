@@ -128,12 +128,28 @@ export function extractLeadFields(content: string): ExtractedLeadFields {
     fields.neighborhoods = matchedNeighborhoods;
   }
 
-  // Name detection — "I'm [Name]", "My name is [Name]", "This is [Name]"
+  // Name detection — "I'm [Name]", "My name is [Name]", "This is [Name]", "call me [Name]"
+  // Blocklist: common words that follow "I'm", "call me", etc. but are not names
+  const NAME_BLOCKLIST = new Set([
+    'looking', 'searching', 'interested', 'wondering', 'hoping', 'trying',
+    'thinking', 'planning', 'moving', 'buying', 'selling', 'renting',
+    'calling', 'emailing', 'reaching', 'contacting', 'writing',
+    'ready', 'available', 'free', 'busy', 'new', 'here', 'back',
+    'not', 'very', 'really', 'just', 'also', 'still', 'currently',
+    'sorry', 'happy', 'glad', 'sure', 'fine', 'good', 'great', 'ok',
+    'tomorrow', 'today', 'later', 'soon', 'now', 'never', 'always',
+    'in', 'at', 'on', 'for', 'from', 'with', 'about', 'around',
+    'a', 'an', 'the', 'this', 'that', 'these', 'those',
+  ]);
   const nameMatch = content.match(
     /(?:(?:I'm|I am|my name is|this is|call me)\s+)([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/i
   );
   if (nameMatch) {
-    fields.name = nameMatch[1];
+    const candidate = nameMatch[1];
+    const firstWord = candidate.split(/\s+/)[0].toLowerCase();
+    if (!NAME_BLOCKLIST.has(firstWord)) {
+      fields.name = candidate;
+    }
   }
 
   // Timeline

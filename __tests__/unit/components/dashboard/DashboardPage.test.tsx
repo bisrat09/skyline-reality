@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 
 // Mock the hooks
-const mockLogin = jest.fn();
+const mockLogin = jest.fn().mockResolvedValue({ success: true, error: null });
 const mockLogout = jest.fn();
 const mockGetAuthHeaders = jest.fn().mockReturnValue({ Authorization: 'Bearer test' });
 const mockHandleUnauthorized = jest.fn();

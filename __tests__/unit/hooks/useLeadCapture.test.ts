@@ -1,9 +1,15 @@
+import { renderHook, act } from '@testing-library/react';
 import {
   extractLeadFields,
   mergeFields,
   hasReachedThreshold,
 } from '@/hooks/useLeadCapture';
+import { useLeadCapture } from '@/hooks/useLeadCapture';
 import type { ExtractedLeadFields } from '@/types/lead';
+import type { ChatMessage } from '@/types/chat';
+
+const mockFetch = jest.fn();
+global.fetch = mockFetch;
 
 describe('extractLeadFields', () => {
   describe('email extraction', () => {
@@ -119,6 +125,31 @@ describe('extractLeadFields', () => {
       const result = extractLeadFields('Call me David');
       expect(result.name).toBe('David');
     });
+
+    it('does NOT extract "looking for" as a name', () => {
+      const result = extractLeadFields("I'm looking for a 3 bedroom");
+      expect(result.name).toBeUndefined();
+    });
+
+    it('does NOT extract "tomorrow" as a name from "call me tomorrow"', () => {
+      const result = extractLeadFields('call me tomorrow');
+      expect(result.name).toBeUndefined();
+    });
+
+    it('does NOT extract "interested" as a name', () => {
+      const result = extractLeadFields("I'm interested in Capitol Hill");
+      expect(result.name).toBeUndefined();
+    });
+
+    it('still extracts real names after "I am"', () => {
+      const result = extractLeadFields('I am Michael Johnson');
+      expect(result.name).toBe('Michael Johnson');
+    });
+
+    it('still extracts real name after "this is"', () => {
+      const result = extractLeadFields('This is Maria');
+      expect(result.name).toBe('Maria');
+    });
   });
 
   describe('timeline extraction', () => {
@@ -228,5 +259,95 @@ describe('hasReachedThreshold', () => {
     const fields: ExtractedLeadFields = { email: 'j@test.com', name: 'John' };
     expect(hasReachedThreshold(fields, 3)).toBe(false);
     expect(hasReachedThreshold(fields, 2)).toBe(true);
+  });
+});
+
+describe('useLeadCapture hook — same-session enrichment', () => {
+  beforeEach(() => {
+    mockFetch.mockReset();
+  });
+
+  function makeMsg(content: string, role: 'user' | 'assistant' = 'user'): ChatMessage {
+    return { id: Math.random().toString(), role, content, timestamp: new Date().toISOString() };
+  }
+
+  it('re-submits when new fields appear after initial submit', async () => {
+    mockFetch.mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
+
+    const { result } = renderHook(() =>
+      useLeadCapture({ sessionId: 'sess-1', threshold: 2 })
+    );
+
+    // First submit: email + name
+    const msgs1 = [
+      makeMsg("I'm John Smith"),
+      makeMsg('My email is john@test.com'),
+    ];
+    await act(async () => {
+      await result.current.processAndSubmit(msgs1);
+    });
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+    expect(result.current.isSubmitted).toBe(true);
+
+    // Second submit: adds phone — should re-submit (fields changed)
+    const msgs2 = [
+      ...msgs1,
+      makeMsg('My phone is 206-555-1234'),
+    ];
+    await act(async () => {
+      await result.current.processAndSubmit(msgs2);
+    });
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+    // Verify the second call includes the phone
+    const secondBody = JSON.parse(mockFetch.mock.calls[1][1].body);
+    expect(secondBody.phone).toBe('206-555-1234');
+    expect(secondBody.sessionId).toBe('sess-1');
+  });
+
+  it('does not re-submit when fields have not changed', async () => {
+    mockFetch.mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
+
+    const { result } = renderHook(() =>
+      useLeadCapture({ sessionId: 'sess-2', threshold: 2 })
+    );
+
+    const msgs = [
+      makeMsg("I'm Jane"),
+      makeMsg('Email: jane@test.com'),
+    ];
+
+    await act(async () => {
+      await result.current.processAndSubmit(msgs);
+    });
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+
+    // Same messages again — no new fields
+    await act(async () => {
+      await result.current.processAndSubmit(msgs);
+    });
+    expect(mockFetch).toHaveBeenCalledTimes(1); // NOT called again
+  });
+
+  it('updates transcript even after initial submit', async () => {
+    mockFetch.mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
+
+    const { result } = renderHook(() =>
+      useLeadCapture({ sessionId: 'sess-3', threshold: 2 })
+    );
+
+    const msgs1 = [makeMsg('Email: a@b.com'), makeMsg('Budget $500K')];
+    await act(async () => {
+      await result.current.processAndSubmit(msgs1);
+    });
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+
+    // Add a new field (phone) — should trigger re-submit with full transcript
+    const msgs2 = [...msgs1, makeMsg('Call me at 206-555-9999')];
+    await act(async () => {
+      await result.current.processAndSubmit(msgs2);
+    });
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+    const body = JSON.parse(mockFetch.mock.calls[1][1].body);
+    expect(body.conversationTranscript).toHaveLength(3);
   });
 });

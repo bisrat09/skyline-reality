@@ -4,10 +4,17 @@ import { useState, useCallback, useEffect } from 'react';
 
 const STORAGE_KEY = 'dashboard_auth';
 
+export type LoginError = 'invalid_password' | 'rate_limited' | 'network_error' | null;
+
+interface LoginResult {
+  success: boolean;
+  error: LoginError;
+}
+
 interface UseDashboardAuthReturn {
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (password: string) => Promise<boolean>;
+  login: (password: string) => Promise<LoginResult>;
   logout: () => void;
   getAuthHeaders: () => Record<string, string>;
   handleUnauthorized: () => void;
@@ -25,20 +32,23 @@ export function useDashboardAuth(): UseDashboardAuthReturn {
     setIsLoading(false);
   }, []);
 
-  const login = useCallback(async (password: string): Promise<boolean> => {
-    // Validate server-side before storing
+  const login = useCallback(async (password: string): Promise<LoginResult> => {
     try {
-      const res = await fetch('/api/dashboard/stats', {
+      const res = await fetch('/api/dashboard/login', {
+        method: 'POST',
         headers: { Authorization: `Bearer ${password}` },
       });
       if (res.ok) {
         sessionStorage.setItem(STORAGE_KEY, password);
         setIsAuthenticated(true);
-        return true;
+        return { success: true, error: null };
       }
-      return false;
+      if (res.status === 429) {
+        return { success: false, error: 'rate_limited' };
+      }
+      return { success: false, error: 'invalid_password' };
     } catch {
-      return false;
+      return { success: false, error: 'network_error' };
     }
   }, []);
 

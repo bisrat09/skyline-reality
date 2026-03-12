@@ -34,9 +34,12 @@ export async function handleEndOfCall(
   const existing = await getVoiceCallByVapiId(event.call.id);
 
   let callId: string;
+  let existingLeadId: string | null = null;
+
   if (existing) {
     await updateVoiceCall(existing.id, callUpdates);
     callId = existing.id;
+    existingLeadId = existing.leadId || null;
   } else {
     callId = await createVoiceCall({
       vapiCallId: event.call.id,
@@ -54,7 +57,12 @@ export async function handleEndOfCall(
     });
   }
 
-  // Create lead if we have contact info
+  // Create lead only if we have contact info AND no lead was already created for this call
+  if (existingLeadId) {
+    // Already processed — skip duplicate lead creation and notification
+    return;
+  }
+
   const hasContact = !!(fields.email || fields.phone || phoneNumber);
   if (hasContact) {
     const { createLeadFromVoiceCall } = await import('./createLeadFromVoiceCall');

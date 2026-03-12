@@ -68,26 +68,26 @@ export async function getAllVoiceCalls(params?: {
     .collection(COLLECTION)
     .orderBy('createdAt', 'desc');
 
+  // Apply date filters at the Firestore level (before limit) for complete results
+  if (params?.startDate) {
+    ref = ref.where('createdAt', '>=', params.startDate);
+  }
+  if (params?.endDate) {
+    ref = ref.where('createdAt', '<=', params.endDate);
+  }
+
   if (params?.limit) {
     ref = ref.limit(params.limit);
   }
 
   const snapshot = await ref.get();
 
-  let calls = snapshot.docs.map(
+  const calls = snapshot.docs.map(
     (doc: { id: string; data: () => Record<string, unknown> }) => ({
       id: doc.id,
       ...doc.data(),
     })
   ) as Array<VoiceCall & { id: string }>;
-
-  // Client-side date filtering
-  if (params?.startDate) {
-    calls = calls.filter((c) => c.createdAt >= params.startDate!);
-  }
-  if (params?.endDate) {
-    calls = calls.filter((c) => c.createdAt <= params.endDate!);
-  }
 
   return calls;
 }

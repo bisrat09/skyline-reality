@@ -2,12 +2,15 @@
  * @jest-environment node
  */
 
+const mockUpdate = jest.fn().mockResolvedValue(undefined);
+const mockDoc = jest.fn().mockReturnValue({ update: mockUpdate });
 const mockAdd = jest.fn().mockResolvedValue({ id: 'lead-new' });
 
 jest.mock('@/lib/firebase/admin', () => ({
   adminDb: {
     collection: jest.fn().mockReturnValue({
       add: mockAdd,
+      doc: mockDoc,
     }),
   },
 }));
@@ -65,5 +68,11 @@ describe('createLeadFromVoiceCall', () => {
         transcript: params.transcript,
       })
     );
+  });
+
+  it('persists agentNotificationSent on lead doc after notification', async () => {
+    await createLeadFromVoiceCall(params);
+    expect(mockDoc).toHaveBeenCalledWith('lead-new');
+    expect(mockUpdate).toHaveBeenCalledWith({ agentNotificationSent: true });
   });
 });

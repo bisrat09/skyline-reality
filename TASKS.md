@@ -4,10 +4,20 @@
 
 - [ ] **4. Dependency vulnerabilities** — `npm audit`: all fixes require breaking major upgrades (Next 14→16, firebase-admin downgrade). Monitor for patch-level fixes.
 - [ ] **17. Firestore rules deploy** — Rules created, run `firebase deploy --only firestore:rules` when ready
+- [ ] **QA-6. Dashboard auth storage** — Password in `sessionStorage`. Moving to HttpOnly cookies requires session layer, CSRF protection, and cookie-setting across all API routes — too invasive for a hardening pass. Risk is low: sessionStorage is per-tab, cleared on close, and CSP mitigates XSS.
 
 ---
 
 ## Completed
+
+### QA Hardening Pass (Codex-identified defects)
+- [x] **QA-1. Same-session lead enrichment** — Replaced `submittedRef` gate with fingerprint comparison. Visitors can now share email first, then add phone/budget later — same lead record gets updated via sessionId upsert.
+- [x] **QA-2. False-positive name extraction** — Added blocklist of ~50 common non-name words (looking, tomorrow, interested, etc.) to name regex. "I'm looking for a 3 bedroom" and "call me tomorrow" no longer pollute lead names.
+- [x] **QA-3. Voice end-of-call idempotency** — `handleEndOfCall` now checks `existing.leadId` before calling `createLeadFromVoiceCall`. Replayed webhooks update the voice call but skip duplicate lead creation. `createLeadFromVoiceCall` now persists `agentNotificationSent` on the lead doc.
+- [x] **QA-4. Dashboard login/rate-limit coupling** — Created dedicated `POST /api/dashboard/login` with its own `dashboard-login` rate-limit bucket. `useDashboardAuth.login()` now returns `{ success, error }` with typed errors: `invalid_password`, `rate_limited`, `network_error`. Dashboard page shows distinct messages for each.
+- [x] **QA-5. Voice dashboard data integrity** — Moved date filtering from client-side to Firestore `.where()` queries in `getAllVoiceCalls()`, applied before `.limit()` for complete results. Notification status persistence was fixed as part of QA-3.
+- [x] **QA-7. Google Fonts build dependency** — Removed `next/font/google` from `layout.tsx`. Switched to system font stack (`Inter, system-ui, -apple-system, sans-serif`) in Tailwind config and globals.css. Build succeeds offline.
+- [x] **QA-8. Voice Calls tab unauthorized recovery** — `useVoiceCalls` now accepts `onUnauthorized` callback (like `useDashboard`). Dashboard page passes `auth.handleUnauthorized` so 401 on voice calls triggers login redirect instead of a broken page.
 
 ### Security Hardening — LOW Priority (all 8 fixed)
 - [x] **10. Email validation** — `isValidEmail()` check before Resend send in `leadNotification.ts` + leads route

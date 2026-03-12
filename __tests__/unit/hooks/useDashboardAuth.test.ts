@@ -41,41 +41,57 @@ describe('useDashboardAuth', () => {
     expect(result.current.isAuthenticated).toBe(true);
   });
 
-  it('login validates server-side and stores password on success', async () => {
-    mockFetch.mockResolvedValue({ ok: true });
+  it('login validates via dedicated login endpoint and stores password on success', async () => {
+    mockFetch.mockResolvedValue({ ok: true, status: 200 });
     const { result } = renderHook(() => useDashboardAuth());
-    let success: boolean = false;
+    let loginResult: { success: boolean; error: string | null } = { success: false, error: null };
     await act(async () => {
-      success = await result.current.login('my-pass');
+      loginResult = await result.current.login('my-pass');
     });
-    expect(success).toBe(true);
+    expect(loginResult.success).toBe(true);
+    expect(loginResult.error).toBeNull();
     expect(result.current.isAuthenticated).toBe(true);
     expect(mockStorage['dashboard_auth']).toBe('my-pass');
-    expect(mockFetch).toHaveBeenCalledWith('/api/dashboard/stats', {
+    expect(mockFetch).toHaveBeenCalledWith('/api/dashboard/login', {
+      method: 'POST',
       headers: { Authorization: 'Bearer my-pass' },
     });
   });
 
-  it('login returns false on invalid password', async () => {
-    mockFetch.mockResolvedValue({ ok: false });
+  it('login returns invalid_password error on 401', async () => {
+    mockFetch.mockResolvedValue({ ok: false, status: 401 });
     const { result } = renderHook(() => useDashboardAuth());
-    let success: boolean = true;
+    let loginResult: { success: boolean; error: string | null } = { success: false, error: null };
     await act(async () => {
-      success = await result.current.login('wrong-pass');
+      loginResult = await result.current.login('wrong-pass');
     });
-    expect(success).toBe(false);
+    expect(loginResult.success).toBe(false);
+    expect(loginResult.error).toBe('invalid_password');
     expect(result.current.isAuthenticated).toBe(false);
     expect(mockStorage['dashboard_auth']).toBeUndefined();
   });
 
-  it('login returns false on network error', async () => {
+  it('login returns rate_limited error on 429', async () => {
+    mockFetch.mockResolvedValue({ ok: false, status: 429 });
+    const { result } = renderHook(() => useDashboardAuth());
+    let loginResult: { success: boolean; error: string | null } = { success: false, error: null };
+    await act(async () => {
+      loginResult = await result.current.login('my-pass');
+    });
+    expect(loginResult.success).toBe(false);
+    expect(loginResult.error).toBe('rate_limited');
+    expect(result.current.isAuthenticated).toBe(false);
+  });
+
+  it('login returns network_error on fetch failure', async () => {
     mockFetch.mockRejectedValue(new Error('Network error'));
     const { result } = renderHook(() => useDashboardAuth());
-    let success: boolean = true;
+    let loginResult: { success: boolean; error: string | null } = { success: false, error: null };
     await act(async () => {
-      success = await result.current.login('my-pass');
+      loginResult = await result.current.login('my-pass');
     });
-    expect(success).toBe(false);
+    expect(loginResult.success).toBe(false);
+    expect(loginResult.error).toBe('network_error');
     expect(result.current.isAuthenticated).toBe(false);
   });
 

@@ -65,7 +65,7 @@ export async function createLeadFromVoiceCall(
   // Link voice call to the new lead
   await linkCallToLead(params.callId, docRef.id);
 
-  // Send agent notification (fire-and-forget)
+  // Send agent notification and persist status on lead doc
   try {
     const { notifyVoiceCall } = await import('@/lib/email/voiceCallNotification');
     await notifyVoiceCall({
@@ -83,6 +83,9 @@ export async function createLeadFromVoiceCall(
       callDuration: params.duration,
       transcript: params.transcript,
       recordingUrl: params.recordingUrl,
+    });
+    await adminDb.collection('leads').doc(docRef.id).update({
+      agentNotificationSent: true,
     });
   } catch (error) {
     console.error('Voice call notification error (non-blocking):', error);
