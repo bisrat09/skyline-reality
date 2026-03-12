@@ -4,6 +4,7 @@
 
 **Live Demo:** [skyline-reality.vercel.app](https://skyline-reality.vercel.app)
 **Dashboard:** [skyline-reality.vercel.app/dashboard](https://skyline-reality.vercel.app/dashboard)
+**Agent Onboarding:** [skyline-reality.vercel.app/onboarding](https://skyline-reality.vercel.app/onboarding)
 
 ---
 
@@ -54,6 +55,7 @@ You close the deal
 | Lead Dashboard | Real-time view of all leads, transcripts, and analytics |
 | Calendar Integration | Buyers book showings directly through the chat |
 | Voice AI (optional) | AI phone agent for after-hours calls |
+| Agent Onboarding | 5-step wizard: profile, greeting, listings, calendar, preview |
 | Analytics | Total leads, response times, conversion rates, urgency breakdown |
 
 ---
@@ -90,7 +92,7 @@ npm run seed
 # Start development server
 npm run dev
 
-# Run tests (565 tests across 71 suites)
+# Run tests (646 tests across 79 suites)
 npm test
 
 # Production build
@@ -112,8 +114,10 @@ src/
 │   ├── api/leads/          # Lead capture endpoint
 │   ├── api/vapi/           # Voice AI webhook
 │   ├── api/dashboard/      # Dashboard API (auth-protected)
+│   ├── api/onboarding/     # Agent onboarding API
 │   ├── api/cron/           # Scheduled follow-up jobs
 │   ├── dashboard/          # Lead management dashboard
+│   ├── onboarding/         # Agent onboarding wizard
 │   └── booking/            # Calendar booking page
 ├── components/             # React components
 │   ├── chat/               # Chat widget system
@@ -121,6 +125,7 @@ src/
 │   ├── sections/           # Landing page sections
 │   ├── listings/           # Property cards and grids
 │   ├── booking/            # Calendar embed
+│   ├── onboarding/         # Onboarding wizard steps
 │   ├── layout/             # Navbar, footer
 │   └── ui/                 # Reusable UI primitives
 ├── hooks/                  # Custom React hooks

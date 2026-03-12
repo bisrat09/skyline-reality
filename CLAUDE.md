@@ -573,12 +573,54 @@ Post-deployment QA review (Codex-identified defects). 7 of 8 fixed, 1 deferred.
 ### Tests
 - **608 tests passing** across 75 test files (19 new tests for QA fixes)
 
+## Phase 5: Agent Onboarding Flow — COMPLETE
+
+Multi-step wizard at `/onboarding` that lets first-time real estate agent clients set up their own AI chatbot in 5 minutes.
+
+### Architecture
+- **5-step wizard:** Profile → Greeting → Listings → Calendar → Preview
+- **Persistence:** Saves to Firestore on each step transition (not just at the end)
+- **Session resume:** `sessionStorage` stores `agentId` so agents can close the tab and come back
+- **Preview:** Static mock conversation using the agent's actual data (no API credits burned)
+
+### New Files (16)
+- `src/types/agent.ts` — AgentConfig, AgentListing, OnboardingStep types + step constants
+- `src/lib/firestore/agents.ts` — Admin SDK CRUD: createAgent, getAgentById, updateAgent
+- `src/app/api/onboarding/route.ts` — POST (create agent) + GET (retrieve by ID)
+- `src/app/api/onboarding/[id]/route.ts` — PATCH (partial update during wizard steps)
+- `src/hooks/useOnboarding.ts` — Multi-step form state, validation, API calls, session resume
+- `src/components/onboarding/StepIndicator.tsx` — Progress dots with labels
+- `src/components/onboarding/ProfileStep.tsx` — Name, brokerage, phone fields
+- `src/components/onboarding/GreetingStep.tsx` — Textarea with char count + suggested template
+- `src/components/onboarding/ListingFormCard.tsx` — Single listing entry card
+- `src/components/onboarding/ListingsStep.tsx` — Add/remove listing cards
+- `src/components/onboarding/CalendarStep.tsx` — Cal.com/Calendly link with preview
+- `src/components/onboarding/PreviewStep.tsx` — Live chatbot mockup with agent's data
+- `src/components/onboarding/OnboardingLayout.tsx` — Wizard shell with navigation
+- `src/app/onboarding/page.tsx` — Client page rendering OnboardingLayout
+
+### Firestore Schema: `agents` Collection
+```
+id, name, brokerage, phone, chatGreeting, listings (AgentListing[]),
+calLink, createdAt, updatedAt
+```
+
+### Validation Rules
+- **Profile:** name (min 2 chars), brokerage (required), phone (10-digit US)
+- **Greeting:** min 10 chars, max 500 chars
+- **Listings:** at least 1, each needs name, address, price > 0
+- **Calendar:** must contain "cal.com" or "calendly.com"
+
+### Tests
+- **646 tests passing** across 79 test files (38 new tests)
+- New test files: agents Firestore, onboarding API, onboarding-update API, OnboardingComponents
+
 ## Commands
 
 ```bash
 npm run dev          # Start dev server
 npm run build        # Production build
-npm test             # Run all unit + integration tests (608 tests)
+npm test             # Run all unit + integration tests (646 tests)
 npm run test:coverage # Tests with coverage report
 npm run test:e2e     # Playwright E2E tests
 npm run seed         # Seed Firestore with sample listings

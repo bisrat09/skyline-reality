@@ -1,5 +1,17 @@
 # Active Tasks
 
+---
+
+## Completed
+
+### Agent Onboarding Flow — COMPLETE
+- [x] **ONB-1. Types + Firestore layer** — `src/types/agent.ts` (AgentConfig, AgentListing, OnboardingStep), `src/lib/firestore/agents.ts` (createAgent, getAgentById, updateAgent)
+- [x] **ONB-2. API routes** — `POST /api/onboarding` (create agent), `GET /api/onboarding?id=` (retrieve), `PATCH /api/onboarding/[id]` (update). Rate limited, validated, field-allowlisted.
+- [x] **ONB-3. useOnboarding hook** — Multi-step form state, per-step validation, session resume via sessionStorage, Firestore persistence on each step transition
+- [x] **ONB-4. Onboarding UI components** — StepIndicator, ProfileStep, GreetingStep, ListingFormCard, ListingsStep, CalendarStep, PreviewStep, OnboardingLayout (8 components)
+- [x] **ONB-5. Onboarding page** — `/onboarding` page wired up
+- [x] **ONB-6. Tests + build** — 646 tests passing across 79 test files (38 new tests). Build clean.
+
 ## Deferred
 
 - [ ] **4. Dependency vulnerabilities** — `npm audit`: all fixes require breaking major upgrades (Next 14→16, firebase-admin downgrade). Monitor for patch-level fixes.
