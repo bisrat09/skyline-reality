@@ -537,17 +537,48 @@ Full security audit and remediation across all priority levels.
 
 ### Key Breaking Change
 - `LoginForm.onLogin` prop: `(password: string) => void` → `(password: string) => Promise<boolean>`
-- `useDashboardAuth().login()` is now async, returns `Promise<boolean>`
+- `useDashboardAuth().login()` is now async, returns `Promise<boolean>` (later updated to `{ success, error }` in QA-4)
 
 ### Tests
-- **589 tests passing** across 74 test files (24 new tests for security fixes)
+- **589 tests passing** across 74 test files (24 new tests for security fixes) — updated to 608 after QA pass
+
+## QA Hardening Pass — COMPLETE (Commit `d48fb4c`)
+
+Post-deployment QA review (Codex-identified defects). 7 of 8 fixed, 1 deferred.
+
+### Fixes
+- **QA-1. Same-session lead enrichment** — Replaced `submittedRef` gate with fingerprint comparison in `useLeadCapture.ts`. Visitors can share email first, then add phone/budget later — same lead record gets updated via sessionId upsert.
+- **QA-2. False-positive name extraction** — Added blocklist of ~50 common non-name words to `leadExtraction.ts`. "I'm looking for a 3 bedroom" no longer pollutes lead names.
+- **QA-3. Voice end-of-call idempotency** — `handleEndOfCall` checks `existing.leadId` before creating leads. Replayed webhooks update the voice call but skip duplicate lead creation. `createLeadFromVoiceCall` persists `agentNotificationSent`.
+- **QA-4. Dashboard login/rate-limit coupling** — Created dedicated `POST /api/dashboard/login` with its own `dashboard-login` rate-limit bucket. `useDashboardAuth.login()` returns `{ success, error: LoginError }` with typed errors.
+- **QA-5. Voice dashboard data integrity** — Moved date filtering from client-side to Firestore `.where()` queries in `getAllVoiceCalls()`, applied before `.limit()`.
+- **QA-7. Google Fonts build dependency** — Removed `next/font/google`, switched to system font stack (`Inter, system-ui`) in Tailwind config and globals.css. Build succeeds offline.
+- **QA-8. Voice tab unauthorized recovery** — `useVoiceCalls` accepts `onUnauthorized` callback. Dashboard passes `auth.handleUnauthorized` so 401 triggers login redirect.
+- **QA-6. Dashboard auth storage** — DEFERRED. sessionStorage kept (HttpOnly cookies too invasive for demo).
+
+### Key API Changes
+- `useDashboardAuth().login()` now returns `Promise<{ success: boolean, error: LoginError }>` (was `Promise<boolean>`)
+- `LoginError` type: `'invalid_password' | 'rate_limited' | 'network_error' | null`
+- `useVoiceCalls()` now accepts optional `{ onUnauthorized }` options
+- Dashboard page maps `LoginError` to user-facing messages via `LOGIN_ERROR_MESSAGES`
+
+### New Files
+- `src/app/api/dashboard/login/route.ts` — Dedicated login endpoint
+- `__tests__/integration/api/dashboard-login.test.ts` — Login endpoint tests
+
+### Modified Files (19)
+- Source: `useDashboardAuth.ts`, `useLeadCapture.ts`, `useVoiceCalls.ts`, `leadExtraction.ts`, `voiceCalls.ts`, `createLeadFromVoiceCall.ts`, `handleEndOfCall.ts`, `dashboard/page.tsx`, `globals.css`, `layout.tsx`, `tailwind.config.ts`
+- Tests: 8 test files updated with new assertions
+
+### Tests
+- **608 tests passing** across 75 test files (19 new tests for QA fixes)
 
 ## Commands
 
 ```bash
 npm run dev          # Start dev server
 npm run build        # Production build
-npm test             # Run all unit + integration tests (589 tests)
+npm test             # Run all unit + integration tests (608 tests)
 npm run test:coverage # Tests with coverage report
 npm run test:e2e     # Playwright E2E tests
 npm run seed         # Seed Firestore with sample listings
@@ -560,14 +591,14 @@ npm run setup:vapi   # Create/update Vapi assistant with tools
 - **GitHub auto-deploy:** bisrat09/skyline-reality → Vercel (push to main triggers deploy)
 - **Vercel env vars:** 19 configured (Firebase, Anthropic, Resend, Cal.com, Dashboard, Vapi)
 - **Vapi assistant:** Set via `VAPI_ASSISTANT_ID` env var (tested and working)
-- **Latest commit:** `b969ee7` — demo prep (favicon, fonts, 404, loading skeleton, sales docs)
+- **Latest commit:** `d48fb4c` — QA hardening (7 of 8 defects fixed)
 
 ## Demo Prep — COMPLETE (Commit `b969ee7`)
 
 ### Visual Polish
 - Favicon: `src/app/icon.svg` (navy square + gold "S") + `src/app/apple-icon.png`
 - OG image: `src/app/opengraph-image.tsx` (dynamic, edge runtime)
-- Fonts: `next/font/google` (Inter + Playfair Display)
+- Fonts: System font stack (Inter, system-ui) — `next/font/google` removed in QA-7 for offline builds
 - Chat button pulse animation, smoother panel transition
 - Custom 404: `src/app/not-found.tsx`
 - Dashboard loading skeleton: `src/app/dashboard/loading.tsx`

@@ -10,7 +10,7 @@
 
 ## Completed
 
-### QA Hardening Pass (Codex-identified defects)
+### QA Hardening Pass (Codex-identified defects, committed `d48fb4c`)
 - [x] **QA-1. Same-session lead enrichment** — Replaced `submittedRef` gate with fingerprint comparison. Visitors can now share email first, then add phone/budget later — same lead record gets updated via sessionId upsert.
 - [x] **QA-2. False-positive name extraction** — Added blocklist of ~50 common non-name words (looking, tomorrow, interested, etc.) to name regex. "I'm looking for a 3 bedroom" and "call me tomorrow" no longer pollute lead names.
 - [x] **QA-3. Voice end-of-call idempotency** — `handleEndOfCall` now checks `existing.leadId` before calling `createLeadFromVoiceCall`. Replayed webhooks update the voice call but skip duplicate lead creation. `createLeadFromVoiceCall` now persists `agentNotificationSent` on the lead doc.
