@@ -15,8 +15,13 @@
 ## Deferred
 
 - [ ] **4. Dependency vulnerabilities** — `npm audit`: all fixes require breaking major upgrades (Next 14→16, firebase-admin downgrade). Monitor for patch-level fixes.
-- [ ] **17. Firestore rules deploy** — Rules created, run `firebase deploy --only firestore:rules` when ready
+- [x] ~~**17. Firestore rules deploy**~~ — Deployed to `skyline-realty-f038b` (2026-03-19)
 - [ ] **QA-6. Dashboard auth storage** — Password in `sessionStorage`. Moving to HttpOnly cookies requires session layer, CSRF protection, and cookie-setting across all API routes — too invasive for a hardening pass. Risk is low: sessionStorage is per-tab, cleared on close, and CSP mitigates XSS.
+
+### Ops & Voice Agent Fixes (2026-03-19)
+- [x] **Firestore security rules deployed** — `firebase deploy --only firestore:rules` to `skyline-realty-f038b`. All 646 tests still passing.
+- [x] **Vapi voice agent fix** — Calls were dropping after first sentence due to silence timeout. Updated assistant via API: `silenceTimeoutSeconds: 60`, `maxDurationSeconds: 600`, `backgroundDenoisingEnabled: true`. Voice calls now sustain full conversations.
+- [x] **Vapi API key verified** — Private key confirmed working, assistant config validated.
 
 ---
 
