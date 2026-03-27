@@ -4,6 +4,41 @@
 
 ## Completed
 
+### Autoresearch: Lead Capture Optimization — COMPLETE
+Ran autoresearch optimization loop on the lead capture skill (system prompt + extraction logic).
+
+**Scoring checklist (6 criteria):**
+1. Was a proper human name captured?
+2. Was email or phone number captured?
+3. Was a budget range captured?
+4. Was a timeline/move-in date captured?
+5. Are all captured fields plausible real values?
+6. Did the AI attempt to book a showing or follow-up?
+
+**Results: 96% → 100% in 3 rounds**
+- 8 simulated buyer conversations tested
+- Target: 95%+ three times in a row — **achieved at 100%**
+
+**Changes kept (3 prompt improvements):**
+- [x] R1: Add lead capture priority order with name-first instruction
+- [x] R2: Add explicit instruction to capture contact info early
+- [x] R3: Add natural budget-asking instruction
+
+**Extraction bug fixed:**
+- [x] Budget range parsing: Added `BUDGET_RANGE_REGEX` to handle "$400-500K" format (was parsing as $400 and $500K separately, giving min=400 max=500000)
+
+**Files created:**
+- `src/prompts/systemPromptV2.ts` — Improved prompt (original `systemPrompt.ts` untouched)
+- `src/prompts/autoresearch-changelog.md` — Full results log
+- `src/prompts/systemPromptV2-raw.txt` — Raw prompt text output
+- `__tests__/autoresearch/lead-capture.test.ts` — Autoresearch test harness
+- `src/scripts/autoresearch.ts` — Standalone script (unused, Jest version preferred)
+
+**Files modified:**
+- `src/lib/leadExtraction.ts` — Added `BUDGET_RANGE_REGEX` for "$X-YK" range parsing
+
+**Tests:** 646 existing tests still passing (no regressions)
+
 ### Agent Onboarding Flow — COMPLETE
 - [x] **ONB-1. Types + Firestore layer** — `src/types/agent.ts` (AgentConfig, AgentListing, OnboardingStep), `src/lib/firestore/agents.ts` (createAgent, getAgentById, updateAgent)
 - [x] **ONB-2. API routes** — `POST /api/onboarding` (create agent), `GET /api/onboarding?id=` (retrieve), `PATCH /api/onboarding/[id]` (update). Rate limited, validated, field-allowlisted.

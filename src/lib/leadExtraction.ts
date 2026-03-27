@@ -44,6 +44,8 @@ const EMAIL_REGEX = /[\w.+-]+@[\w-]+\.[\w.-]+/;
 const PHONE_REGEX = /(?:\+?1[-.\s]?)?(?:\(?\d{3}\)?[-.\s]?)?\d{3}[-.\s]?\d{4}/;
 const BUDGET_REGEX_DOLLAR = /\$\s?([\d,.]+)\s?(?:million|mil|[kKmM])?\b/g;
 const BUDGET_REGEX_WORD = /\b(?:budget|price|max|afford|spend|around|under|up to)\s+\$?\s?([\d,.]+)\s?(?:million|mil|[kKmM])?\b/gi;
+// Range pattern: "$400-500K", "$400K-$500K", "$400-$500K" (requires $ prefix to avoid matching phone/timeline)
+const BUDGET_RANGE_REGEX = /\$\s?([\d,.]+)\s?[kKmM]?\s?[-–—]\s?\$?\s?([\d,.]+)\s?([kKmM]|million|mil)?\b/g;
 const BEDROOMS_REGEX = /(\d)\s*(?:bed(?:room)?s?|bd|br)\b/i;
 
 /**
@@ -83,19 +85,45 @@ export function extractLeadFields(content: string): ExtractedLeadFields {
   // Budget (find dollar amounts from "$500K", "budget 500000", "1.2 million")
   const budgetMatches: number[] = [];
   let match;
-  for (const regex of [BUDGET_REGEX_DOLLAR, BUDGET_REGEX_WORD]) {
-    regex.lastIndex = 0;
-    while ((match = regex.exec(content)) !== null) {
-      let amount = parseFloat(match[1].replace(/,/g, ''));
-      // Handle suffix: "million"/"mil"/"M" or "K"
-      const suffix = match[0].toLowerCase();
-      if (/million|mil$/.test(suffix) || /[mM]$/.test(match[0])) {
-        amount *= 1000000;
-      } else if (/[kK]$/.test(match[0])) {
-        amount *= 1000;
+
+  // Try range pattern first: "$400-500K", "$400K-$500K"
+  BUDGET_RANGE_REGEX.lastIndex = 0;
+  const rangeMatch = BUDGET_RANGE_REGEX.exec(content);
+  if (rangeMatch) {
+    let low = parseFloat(rangeMatch[1].replace(/,/g, ''));
+    let high = parseFloat(rangeMatch[2].replace(/,/g, ''));
+    const suffix = (rangeMatch[3] || '').toLowerCase();
+    const multiplier = /million|mil|m/.test(suffix) ? 1000000 : /k/.test(suffix) ? 1000 : 1;
+    // Apply suffix to both values (the suffix on the second number applies to both in ranges like "$400-500K")
+    if (multiplier > 1) {
+      // Only apply to values that look like they need it (< 10000 for K, < 100 for M)
+      if (low < 10000 && multiplier === 1000) low *= multiplier;
+      if (high < 10000 && multiplier === 1000) high *= multiplier;
+      if (low < 100 && multiplier === 1000000) low *= multiplier;
+      if (high < 100 && multiplier === 1000000) high *= multiplier;
+    }
+    low = Math.round(low);
+    high = Math.round(high);
+    if (low > 0) budgetMatches.push(low);
+    if (high > 0) budgetMatches.push(high);
+  }
+
+  // Fall back to individual amount patterns if no range found
+  if (budgetMatches.length === 0) {
+    for (const regex of [BUDGET_REGEX_DOLLAR, BUDGET_REGEX_WORD]) {
+      regex.lastIndex = 0;
+      while ((match = regex.exec(content)) !== null) {
+        let amount = parseFloat(match[1].replace(/,/g, ''));
+        // Handle suffix: "million"/"mil"/"M" or "K"
+        const suffix = match[0].toLowerCase();
+        if (/million|mil$/.test(suffix) || /[mM]$/.test(match[0])) {
+          amount *= 1000000;
+        } else if (/[kK]$/.test(match[0])) {
+          amount *= 1000;
+        }
+        amount = Math.round(amount);
+        if (amount > 0) budgetMatches.push(amount);
       }
-      amount = Math.round(amount);
-      if (amount > 0) budgetMatches.push(amount);
     }
   }
   // Deduplicate
